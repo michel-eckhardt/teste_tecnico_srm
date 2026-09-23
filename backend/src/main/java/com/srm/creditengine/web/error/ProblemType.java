@@ -18,6 +18,8 @@ public enum ProblemType {
     CONFLICT(HttpStatus.CONFLICT, "Conflito"),
     CONCURRENT_MODIFICATION(HttpStatus.CONFLICT, "Modificação concorrente"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Tipo de conteúdo não suportado"),
+    EXCHANGE_RATE_UNAVAILABLE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio indisponível"),
+    EXCHANGE_RATE_STALE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio desatualizada"),
     PRECONDITION_REQUIRED(HttpStatus.PRECONDITION_REQUIRED, "Pré-condição obrigatória"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno");
 
@@ -35,6 +37,8 @@ public enum ProblemType {
     public static ProblemType of(ErrorCode code) {
         return switch (code) {
             case RESOURCE_NOT_FOUND -> RESOURCE_NOT_FOUND;
+            case EXCHANGE_RATE_UNAVAILABLE -> EXCHANGE_RATE_UNAVAILABLE;
+            case EXCHANGE_RATE_STALE -> EXCHANGE_RATE_STALE;
         };
     }
 

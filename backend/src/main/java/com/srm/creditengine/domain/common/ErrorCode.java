@@ -5,5 +5,7 @@ package com.srm.creditengine.domain.common;
  * code into an HTTP status and a problem type; clients branch on the code, never on the message.
  */
 public enum ErrorCode {
-    RESOURCE_NOT_FOUND
+    RESOURCE_NOT_FOUND,
+    EXCHANGE_RATE_UNAVAILABLE,
+    EXCHANGE_RATE_STALE
 }

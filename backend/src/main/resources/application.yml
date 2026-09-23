@@ -35,3 +35,6 @@ srm:
   business:
     # Business dates (operation date, report periods) are evaluated in this zone; instants stay UTC.
     zone-id: America/Sao_Paulo
+  fx:
+    # Cross-currency pricing refuses rates older than this (counted from the start of their reference date).
+    max-rate-age: P5D

@@ -4,6 +4,10 @@ package com.srm.creditengine.domain.common;
 public class ResourceNotFoundException extends BusinessException {
 
     public ResourceNotFoundException(String resource, Object id) {
-        super(ErrorCode.RESOURCE_NOT_FOUND, "%s com identificador %s não existe.".formatted(resource, id));
+        this("%s com identificador %s não existe.".formatted(resource, id));
+    }
+
+    public ResourceNotFoundException(String detail) {
+        super(ErrorCode.RESOURCE_NOT_FOUND, detail);
     }
 }
