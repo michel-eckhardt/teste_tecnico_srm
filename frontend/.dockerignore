@@ -1,0 +1,18 @@
+# Only what the build needs goes into the Docker context.
+node_modules
+dist
+coverage
+.vite
+*.log
+npm-debug.log*
+
+# local environment and editor files
+.env
+.env.*
+.vscode
+.idea
+
+# not needed to build the image
+Dockerfile
+.dockerignore
+README.md
