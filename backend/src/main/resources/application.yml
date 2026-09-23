@@ -1,0 +1,28 @@
+# SRM Credit Engine - base configuration (profile "default" = local development).
+# Profiles: default (local), docker (container runtime), demo (large demo dataset), test (automated tests).
+spring:
+  application:
+    name: srm-credit-engine
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/srm_credit_engine}
+    username: ${DB_USER:srm}
+    password: ${DB_PASSWORD:srm}
+    hikari:
+      pool-name: srm-hikari
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+  jpa:
+    # Entities are never lazily loaded from the web layer; services return fully initialized data.
+    open-in-view: false
+    hibernate:
+      # Schema is owned by Flyway; Hibernate only checks that the mapping matches it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
