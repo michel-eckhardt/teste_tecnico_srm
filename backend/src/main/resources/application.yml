@@ -26,3 +26,8 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
+
+srm:
+  business:
+    # Business dates (operation date, report periods) are evaluated in this zone; instants stay UTC.
+    zone-id: America/Sao_Paulo
