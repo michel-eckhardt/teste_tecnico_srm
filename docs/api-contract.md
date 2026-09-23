@@ -82,7 +82,7 @@ Convenção: `rate` = quantas unidades de `quote` valem 1 unidade de `base` (ex.
 `referenceDate` opcional (padrão: data de negócio atual). `base != quote`, `rate > 0`.
 
 `POST /exchange-rates/sync` → `200` | `503`
-Busca as taxas vigentes na API Frankfurter (com retry + circuit breaker) e persiste. Resposta: lista de taxas gravadas (mesmo formato de `latest`).
+Busca as taxas vigentes na API Frankfurter (com retry + circuit breaker) e persiste. Resposta: lista das taxas do provedor como estão gravadas (mesmo formato de `latest`). Idempotente: uma taxa idêntica (mesmo par, data de referência e valor) já gravada não é duplicada e é devolvida como está.
 
 ### Simulação de precificação
 `POST /pricing/simulations` → `200` | `400` | `422` (não persiste nada)

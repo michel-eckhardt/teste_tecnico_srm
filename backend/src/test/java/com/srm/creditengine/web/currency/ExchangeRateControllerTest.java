@@ -18,6 +18,7 @@ import com.srm.creditengine.domain.common.ResourceNotFoundException;
 import com.srm.creditengine.domain.currency.Currency;
 import com.srm.creditengine.domain.currency.ExchangeRateService;
 import com.srm.creditengine.domain.currency.ExchangeRateSource;
+import com.srm.creditengine.domain.currency.ExchangeRateSyncService;
 import com.srm.creditengine.domain.currency.ExchangeRateView;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -53,6 +54,9 @@ class ExchangeRateControllerTest {
 
     @MockitoBean
     private ExchangeRateService service;
+
+    @MockitoBean
+    private ExchangeRateSyncService syncService;
 
     @Test
     void listsCurrencies() throws Exception {

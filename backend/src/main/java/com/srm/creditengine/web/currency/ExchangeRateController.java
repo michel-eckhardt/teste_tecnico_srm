@@ -1,6 +1,7 @@
 package com.srm.creditengine.web.currency;
 
 import com.srm.creditengine.domain.currency.ExchangeRateService;
+import com.srm.creditengine.domain.currency.ExchangeRateSyncService;
 import com.srm.creditengine.domain.currency.ExchangeRateView;
 import com.srm.creditengine.web.support.ApiPaths;
 import com.srm.creditengine.web.support.PageResponse;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +30,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class ExchangeRateController {
 
     private final ExchangeRateService exchangeRateService;
+    private final ExchangeRateSyncService exchangeRateSyncService;
 
-    public ExchangeRateController(ExchangeRateService exchangeRateService) {
+    public ExchangeRateController(
+            ExchangeRateService exchangeRateService, ExchangeRateSyncService exchangeRateSyncService) {
         this.exchangeRateService = exchangeRateService;
+        this.exchangeRateSyncService = exchangeRateSyncService;
     }
 
     @GetMapping("/latest")
@@ -67,5 +72,16 @@ public class ExchangeRateController {
                 .buildAndExpand(created.id())
                 .toUri();
         return ResponseEntity.created(location).body(ExchangeRateResponse.from(created));
+    }
+
+    @PostMapping("/sync")
+    @Operation(
+            summary = "Sincroniza as taxas com a API Frankfurter",
+            description = "Chamada protegida por retry e circuit breaker. Idempotente: taxas idênticas não são "
+                    + "duplicadas. 503 FX_PROVIDER_UNAVAILABLE se o provedor estiver indisponível.")
+    public List<ExchangeRateResponse> synchronize() {
+        return exchangeRateSyncService.synchronize().stream()
+                .map(ExchangeRateResponse::from)
+                .toList();
     }
 }

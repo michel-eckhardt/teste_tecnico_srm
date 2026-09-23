@@ -42,6 +42,12 @@ srm:
       base-url: ${FRANKFURTER_BASE_URL:https://api.frankfurter.dev/v1}
       connect-timeout: 2s
       read-timeout: 3s
+    sync:
+      # Pull USD/BRL from Frankfurter on startup and hourly (enabled in the docker/demo profiles).
+      enabled: ${FX_SYNC_ENABLED:false}
+      cron: "0 5 * * * *"
+      base: USD
+      quotes: BRL
 
 # Resilience of the Frankfurter call. Retry wraps the circuit breaker, so each attempt counts as a call.
 resilience4j:
@@ -75,6 +81,26 @@ resilience4j:
           - org.springframework.web.client.HttpClientErrorException
         register-health-indicator: true
 ---
+# Container runtime (docker compose): the provider is reachable, keep rates fresh automatically.
+spring:
+  config:
+    activate:
+      on-profile: docker
+srm:
+  fx:
+    sync:
+      enabled: ${FX_SYNC_ENABLED:true}
+---
+# Demo: same as docker regarding FX (can be combined with the docker profile).
+spring:
+  config:
+    activate:
+      on-profile: demo
+srm:
+  fx:
+    sync:
+      enabled: ${FX_SYNC_ENABLED:true}
+---
 spring:
   config:
     activate:
@@ -85,6 +111,9 @@ srm:
       # Tests point base-url to WireMock; short timeouts keep the timeout scenarios fast.
       connect-timeout: 500ms
       read-timeout: 1s
+    sync:
+      # never call the real provider (nor wait for it) in tests
+      enabled: false
 resilience4j:
   retry:
     instances:

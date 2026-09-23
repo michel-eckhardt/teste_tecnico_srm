@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,8 +44,11 @@ class ExchangeRateServiceTest {
     private final CurrencyRepository currencies = mock(CurrencyRepository.class);
     private final BusinessClock clock =
             new BusinessClock(Clock.fixed(NOW, ZoneOffset.UTC), new BusinessProperties(ZoneId.of("America/Sao_Paulo")));
-    private final ExchangeRateService service =
-            new ExchangeRateService(rates, currencies, clock, new FxProperties(Duration.ofDays(5)));
+    private final ExchangeRateService service = new ExchangeRateService(
+            rates,
+            currencies,
+            clock,
+            new FxProperties(Duration.ofDays(5), new FxProperties.Sync(false, "0 5 * * * *", USD, Set.of(BRL))));
 
     private static ExchangeRate rate(CurrencyCode base, CurrencyCode quote, String value, LocalDate date) {
         return ExchangeRate.of(
