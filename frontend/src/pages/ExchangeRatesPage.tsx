@@ -1,4 +1,6 @@
-import { CurrentRates } from '@/features/exchange-rates';
+import { Stack } from '@mantine/core';
+
+import { CurrentRates, RateHistory } from '@/features/exchange-rates';
 import { PageHeader } from '@/shared/ui/PageHeader';
 
 export function ExchangeRatesPage() {
@@ -6,9 +8,12 @@ export function ExchangeRatesPage() {
     <>
       <PageHeader
         title="Câmbio"
-        description="Taxas vigentes (publicadas ou derivadas do par inverso) e sincronização com a Frankfurter."
+        description="Taxas vigentes (publicadas ou derivadas do par inverso), sincronização com a Frankfurter e histórico."
       />
-      <CurrentRates />
+      <Stack gap="lg">
+        <CurrentRates />
+        <RateHistory />
+      </Stack>
     </>
   );
 }
