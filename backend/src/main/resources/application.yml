@@ -63,6 +63,17 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  tracing:
+    # Micrometer Tracing (OpenTelemetry bridge) puts traceId/spanId in the MDC of every log line.
+    # Spans are not exported anywhere (no exporter dependency); TRACING_ENABLED=false turns it off.
+    enabled: ${TRACING_ENABLED:true}
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    # Plain-text logs: [traceId,spanId] plus the X-Correlation-Id of the request.
+    correlation: "[%X{traceId:-},%X{spanId:-}] [cid=%X{correlationId:-}] "
 
 info:
   app:
@@ -141,11 +152,16 @@ resilience4j:
         register-health-indicator: true
         allow-health-indicator-to-fail: false
 ---
-# Container runtime (docker compose): the provider is reachable, keep rates fresh automatically.
+# Container runtime (docker compose): JSON (ECS) logs for log shippers and automatic FX sync.
 spring:
   config:
     activate:
       on-profile: docker
+logging:
+  structured:
+    # Elastic Common Schema; MDC entries (traceId, spanId, correlationId) become JSON fields.
+    format:
+      console: ecs
 srm:
   fx:
     sync:
