@@ -1,0 +1,10 @@
+# Only the Maven wrapper, the POM and the sources are needed to build the image.
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+.mvn/wrapper/maven-wrapper.jar
+Dockerfile
+.dockerignore
+README.md
