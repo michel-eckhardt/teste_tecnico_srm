@@ -8,6 +8,7 @@ import type {
   ReceivableTypeCode,
   Simulation,
   SimulationRequest,
+  StatementItem,
 } from '@/shared/api/contract';
 
 /** Contract-shaped sample data (docs/api-contract.md). */
@@ -157,5 +158,27 @@ export function problem(status: number, code: string, title: string, detail: str
     instance: '/api/v1/test',
     code,
     correlationId: `cid-${code.toLowerCase()}`,
+  };
+}
+
+export function statementItemFor(
+  index: number,
+  overrides: Partial<StatementItem> = {},
+): StatementItem {
+  const settled = index % 2 === 0;
+  return {
+    operationId: `0192a000-0000-7000-8000-${String(index).padStart(12, '0')}`,
+    assignorId: acme.id,
+    assignorName: `Cedente ${index} Ltda`,
+    assignorDocument: acme.document,
+    status: settled ? 'SETTLED' : 'PENDING',
+    paymentCurrency: 'BRL',
+    receivablesCount: 2,
+    totalFaceValue: '22830.50',
+    totalDiscount: '1453.20',
+    totalNetAmount: '21377.30',
+    createdAt: '2026-09-23T14:05:00Z',
+    settledAt: settled ? '2026-09-23T14:06:10Z' : null,
+    ...overrides,
   };
 }

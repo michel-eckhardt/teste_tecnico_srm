@@ -4,6 +4,7 @@ import { assignorHandlers } from './assignors';
 import { creditAssignmentHandlers } from './credit-assignments';
 import { pricingHandlers } from './pricing';
 import { referenceDataHandlers } from './reference-data';
+import { transactionHandlers } from './transactions';
 
 /**
  * Default, contract-shaped handlers (docs/api-contract.md). Tests override them per scenario with
@@ -14,4 +15,5 @@ export const handlers: RequestHandler[] = [
   ...pricingHandlers,
   ...assignorHandlers,
   ...creditAssignmentHandlers,
+  ...transactionHandlers,
 ];
