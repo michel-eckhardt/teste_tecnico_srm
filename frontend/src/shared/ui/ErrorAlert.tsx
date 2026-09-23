@@ -1,5 +1,6 @@
 import { Alert, Button, List, Stack, Text } from '@mantine/core';
 import { IconAlertTriangle } from '@tabler/icons-react';
+import type { ReactNode } from 'react';
 
 import { toApiError } from '@/shared/api/api-error';
 
@@ -10,15 +11,29 @@ interface ErrorAlertProps {
   /** Overrides the title that comes from the problem details. */
   title?: string;
   onRetry?: () => void;
+  /** Replaces the detail sent by the server (e.g. a message specific to the screen). */
+  message?: ReactNode;
   /** Hides the per-field list when the fields are already shown next to the inputs. */
   hideFieldErrors?: boolean;
+  /** Human name of a field path reported by the server. */
+  fieldLabel?: (field: string) => string;
+  /** Extra guidance rendered below the message. */
+  children?: ReactNode;
 }
 
 /**
  * Inline error panel for a failed request: the backend's Portuguese title/detail, the rejected
  * fields and the correlation id to quote to support.
  */
-export function ErrorAlert({ error, title, onRetry, hideFieldErrors = false }: ErrorAlertProps) {
+export function ErrorAlert({
+  error,
+  title,
+  message,
+  onRetry,
+  hideFieldErrors = false,
+  fieldLabel = (field) => field,
+  children,
+}: ErrorAlertProps) {
   const apiError = toApiError(error);
   return (
     <Alert
@@ -29,13 +44,14 @@ export function ErrorAlert({ error, title, onRetry, hideFieldErrors = false }: E
       role="alert"
     >
       <Stack gap="xs">
-        <Text size="sm">{apiError.detail}</Text>
+        <Text size="sm">{message ?? apiError.detail}</Text>
+        {children}
         {!hideFieldErrors && apiError.fieldErrors.length > 0 ? (
           <List size="sm" spacing={2}>
             {apiError.fieldErrors.map((violation) => (
               <List.Item key={`${violation.field}:${violation.message}`}>
                 <Text span ff="monospace" size="xs">
-                  {violation.field}
+                  {fieldLabel(violation.field)}
                 </Text>
                 : {violation.message}
               </List.Item>

@@ -54,6 +54,12 @@ export function tomorrow(now: Date = new Date()): IsoDate {
   return dayjs(now).add(1, 'day').format('YYYY-MM-DD');
 }
 
+/** Calendar arithmetic on ISO dates: `addDays("2026-12-31", 1)` → `"2027-01-01"`. */
+export function addDays(date: IsoDate, days: number): IsoDate {
+  const time = Date.parse(`${date}T00:00:00Z`) + days * 86_400_000;
+  return new Date(time).toISOString().slice(0, 10);
+}
+
 /** Whole days from `from` to `to` (calendar dates, DST-proof). */
 export function daysBetween(from: IsoDate, to: IsoDate): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);

@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { daysBetween, formatDate, formatDateTime, isIsoDate, parseBrDate, tomorrow } from './date';
+import {
+  addDays,
+  daysBetween,
+  formatDate,
+  formatDateTime,
+  isIsoDate,
+  parseBrDate,
+  tomorrow,
+} from './date';
 
 describe('calendar dates', () => {
   it('formats ISO dates as DD/MM/YYYY without time zone shifts', () => {
@@ -26,6 +34,8 @@ describe('calendar dates', () => {
     expect(tomorrow(new Date(2026, 11, 31, 23, 59))).toBe('2027-01-01');
     expect(daysBetween('2026-09-23', '2026-12-22')).toBe(90);
     expect(daysBetween('2026-10-01', '2026-11-01')).toBe(31);
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
+    expect(addDays('2026-09-23', 1825)).toBe('2031-09-22');
   });
 });
 

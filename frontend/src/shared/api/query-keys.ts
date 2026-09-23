@@ -19,7 +19,7 @@ export const queryKeys = {
     receivableTypes: () => [...referenceData, 'receivable-types'] as const,
   },
   pricing: {
-    simulation: (request: SimulationRequest) => ['pricing-simulation', request] as const,
+    simulation: (request: SimulationRequest | null) => ['pricing-simulation', request] as const,
   },
   assignors: {
     all: assignors,
