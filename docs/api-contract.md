@@ -149,6 +149,7 @@ Resposta (`CreditAssignment`), também em `GET /credit-assignments/{id}` (com `E
 `POST /credit-assignments/{id}/settlement` — header `If-Match: "<version>"` **obrigatório**
 → `200` (operação `SETTLED`, novo `ETag`) | `404` | `409` (já liquidada/cancelada, conflito concorrente) | `412` | `422` (`INSUFFICIENT_FUNDS`) | `428`
 A liquidação debita a conta-caixa do fundo na moeda de pagamento e registra o movimento — tudo na mesma transação.
+`If-Match` aceita `"<versão>"` (também `W/"<versão>"`); `*` ou valor malformado → `400 VALIDATION_ERROR`. Conflitos de versão na conta-caixa compartilhada (liquidações concorrentes de operações diferentes) são re-tentados de forma transparente pelo servidor; o que persistir vira `409 CONCURRENT_MODIFICATION`.
 
 `POST /credit-assignments/{id}/cancellation` — header `If-Match` obrigatório → `200` (`CANCELLED`) | `404` | `409` | `412` | `428`
 

@@ -3,6 +3,7 @@ package com.srm.creditengine.web.assignment;
 import com.srm.creditengine.domain.assignment.CreationResult;
 import com.srm.creditengine.domain.assignment.CreditAssignment;
 import com.srm.creditengine.domain.assignment.CreditAssignmentService;
+import com.srm.creditengine.domain.assignment.SettlementService;
 import com.srm.creditengine.web.support.ApiPaths;
 import com.srm.creditengine.web.support.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,9 +33,11 @@ public class CreditAssignmentController {
     static final String IDEMPOTENCY_KEY = "Idempotency-Key";
 
     private final CreditAssignmentService creditAssignments;
+    private final SettlementService settlements;
 
-    public CreditAssignmentController(CreditAssignmentService creditAssignments) {
+    public CreditAssignmentController(CreditAssignmentService creditAssignments, SettlementService settlements) {
         this.creditAssignments = creditAssignments;
+        this.settlements = settlements;
     }
 
     @PostMapping
@@ -63,7 +66,32 @@ public class CreditAssignmentController {
     @GetMapping("/{id}")
     @Operation(summary = "Consulta uma operação (ETag = versão atual)")
     public ResponseEntity<CreditAssignmentResponse> get(@PathVariable UUID id) {
-        CreditAssignment operation = creditAssignments.get(id);
+        return withEtag(creditAssignments.get(id));
+    }
+
+    @PostMapping("/{id}/settlement")
+    @Operation(
+            summary = "Liquida a operação (If-Match obrigatório)",
+            description = "Na mesma transação: PENDING -> SETTLED, débito da conta-caixa do fundo na moeda de "
+                    + "pagamento e registro do movimento. 409 se já liquidada/cancelada ou em conflito concorrente, "
+                    + "412 se o If-Match não for a versão atual, 422 INSUFFICIENT_FUNDS, 428 sem If-Match.")
+    public ResponseEntity<CreditAssignmentResponse> settle(
+            @PathVariable UUID id,
+            @Parameter(description = "ETag atual da operação, ex.: \"0\"") @RequestHeader(HttpHeaders.IF_MATCH)
+                    String ifMatch) {
+        return withEtag(settlements.settle(id, EntityTags.parseIfMatch(ifMatch)));
+    }
+
+    @PostMapping("/{id}/cancellation")
+    @Operation(summary = "Cancela uma operação pendente (If-Match obrigatório)")
+    public ResponseEntity<CreditAssignmentResponse> cancel(
+            @PathVariable UUID id,
+            @Parameter(description = "ETag atual da operação, ex.: \"0\"") @RequestHeader(HttpHeaders.IF_MATCH)
+                    String ifMatch) {
+        return withEtag(settlements.cancel(id, EntityTags.parseIfMatch(ifMatch)));
+    }
+
+    private static ResponseEntity<CreditAssignmentResponse> withEtag(CreditAssignment operation) {
         return ResponseEntity.ok()
                 .eTag(EntityTags.of(operation.getVersion()))
                 .body(CreditAssignmentResponse.from(operation));

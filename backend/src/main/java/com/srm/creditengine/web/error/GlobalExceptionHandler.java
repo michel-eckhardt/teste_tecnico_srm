@@ -2,6 +2,7 @@ package com.srm.creditengine.web.error;
 
 import com.srm.creditengine.domain.common.BusinessException;
 import com.srm.creditengine.web.support.CorrelationIdFilter;
+import com.srm.creditengine.web.support.InvalidHeaderException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.ArrayList;
@@ -58,6 +59,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemType type = ProblemType.of(ex.code());
         log.info("Business rule rejected the request: code={}", ex.code());
         return problem(type, ex.getMessage(), List.of(), new HttpHeaders(), request);
+    }
+
+    @ExceptionHandler(InvalidHeaderException.class)
+    ResponseEntity<Object> handleInvalidHeader(InvalidHeaderException ex, WebRequest request) {
+        return problem(
+                ProblemType.VALIDATION_ERROR,
+                "Header inválido.",
+                List.of(new FieldViolation(ex.header(), ex.getMessage())),
+                new HttpHeaders(),
+                request);
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)

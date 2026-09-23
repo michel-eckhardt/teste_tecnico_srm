@@ -60,6 +60,15 @@ srm:
       duplicata-mercantil: "0.015"
       cheque-pre-datado: "0.025"
 
+  settlement:
+    # Optimistic locking conflicts on the shared cash account are retried around the whole transaction.
+    retry:
+      max-retries: 5
+      delay: 50ms
+      jitter: 25ms
+      multiplier: 2
+      max-delay: 1s
+
 # Resilience of the Frankfurter call. Retry wraps the circuit breaker, so each attempt counts as a call.
 resilience4j:
   retry:
