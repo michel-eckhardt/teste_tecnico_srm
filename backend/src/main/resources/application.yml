@@ -38,3 +38,56 @@ srm:
   fx:
     # Cross-currency pricing refuses rates older than this (counted from the start of their reference date).
     max-rate-age: P5D
+    frankfurter:
+      base-url: ${FRANKFURTER_BASE_URL:https://api.frankfurter.dev/v1}
+      connect-timeout: 2s
+      read-timeout: 3s
+
+# Resilience of the Frankfurter call. Retry wraps the circuit breaker, so each attempt counts as a call.
+resilience4j:
+  retry:
+    instances:
+      frankfurter:
+        max-attempts: 3
+        wait-duration: 500ms
+        # 500ms, ~1s (+/- 50% jitter) between attempts
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        exponential-max-wait-duration: 4s
+        enable-randomized-wait: true
+        randomized-wait-factor: 0.5
+        # Only transient failures are retried: I/O errors/timeouts and 5xx. 4xx and unreadable payloads are not.
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+  circuitbreaker:
+    instances:
+      frankfurter:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        automatic-transition-from-open-to-half-open-enabled: true
+        permitted-number-of-calls-in-half-open-state: 2
+        # A 4xx means our request is wrong, not that the provider is unhealthy.
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
+        register-health-indicator: true
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+srm:
+  fx:
+    frankfurter:
+      # Tests point base-url to WireMock; short timeouts keep the timeout scenarios fast.
+      connect-timeout: 500ms
+      read-timeout: 1s
+resilience4j:
+  retry:
+    instances:
+      frankfurter:
+        wait-duration: 10ms
+        exponential-max-wait-duration: 50ms

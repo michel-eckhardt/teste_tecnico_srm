@@ -11,7 +11,11 @@ public abstract class BusinessException extends RuntimeException {
     private final ErrorCode code;
 
     protected BusinessException(ErrorCode code, String message) {
-        super(message);
+        this(code, message, null);
+    }
+
+    protected BusinessException(ErrorCode code, String message, Throwable cause) {
+        super(message, cause);
         this.code = Objects.requireNonNull(code, "code");
     }
 

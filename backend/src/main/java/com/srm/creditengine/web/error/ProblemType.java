@@ -21,7 +21,8 @@ public enum ProblemType {
     EXCHANGE_RATE_UNAVAILABLE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio indisponível"),
     EXCHANGE_RATE_STALE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio desatualizada"),
     PRECONDITION_REQUIRED(HttpStatus.PRECONDITION_REQUIRED, "Pré-condição obrigatória"),
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno");
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno"),
+    FX_PROVIDER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Provedor de câmbio indisponível");
 
     private static final String TYPE_BASE_URI = "https://srm.com.br/problems/";
 
@@ -39,6 +40,7 @@ public enum ProblemType {
             case RESOURCE_NOT_FOUND -> RESOURCE_NOT_FOUND;
             case EXCHANGE_RATE_UNAVAILABLE -> EXCHANGE_RATE_UNAVAILABLE;
             case EXCHANGE_RATE_STALE -> EXCHANGE_RATE_STALE;
+            case FX_PROVIDER_UNAVAILABLE -> FX_PROVIDER_UNAVAILABLE;
         };
     }
 

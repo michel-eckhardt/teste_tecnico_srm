@@ -7,5 +7,6 @@ package com.srm.creditengine.domain.common;
 public enum ErrorCode {
     RESOURCE_NOT_FOUND,
     EXCHANGE_RATE_UNAVAILABLE,
-    EXCHANGE_RATE_STALE
+    EXCHANGE_RATE_STALE,
+    FX_PROVIDER_UNAVAILABLE
 }

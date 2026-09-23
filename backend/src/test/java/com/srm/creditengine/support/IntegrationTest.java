@@ -11,14 +11,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * Full application on a random port, backed by the shared PostgreSQL container (profile {@code test}).
- * All integration tests use the same annotation so they share one cached Spring context.
+ * Full application on a random port, backed by the shared PostgreSQL container and a WireMock
+ * stand-in for Frankfurter (profile {@code test}). All integration tests use the same annotation so
+ * they share one cached Spring context.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-@Import(TestcontainersConfig.class)
+@Import({TestcontainersConfig.class, WireMockConfig.class})
 @ActiveProfiles("test")
 public @interface IntegrationTest {}

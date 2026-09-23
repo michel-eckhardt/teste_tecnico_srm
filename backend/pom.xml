@@ -21,6 +21,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springdoc.version>3.1.1</springdoc.version>
         <archunit.version>1.5.0</archunit.version>
+        <resilience4j.version>2.4.0</resilience4j.version>
+        <wiremock.version>3.13.2</wiremock.version>
         <spotless-maven-plugin.version>3.10.2</spotless-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <!-- Minimum line coverage enforced on the business (domain) packages -->
@@ -62,6 +64,27 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Integration: FX provider over HTTP with retry + circuit breaker -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-restclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot4</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-micrometer</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+        <dependency>
+            <!-- AOP proxies for the @Retry / @CircuitBreaker annotations -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
+        </dependency>
+
         <!-- Operations -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -97,6 +120,12 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
