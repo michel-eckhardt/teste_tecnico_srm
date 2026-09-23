@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { apiUrl } from '@/test/api';
+import { acme } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -45,6 +46,50 @@ describe('TransactionsExplorer', () => {
       'descending',
     );
     expect(within(table).getAllByText('R$ 21.377,30')).toHaveLength(20);
+  });
+
+  it('restores filters, page and sort from the URL', async () => {
+    renderExplorer(
+      `/transacoes?from=2026-09-01&to=2026-09-30&currency=USD&status=PENDING&assignorId=${acme.id}&page=2&size=50&sort=assignorName,asc`,
+    );
+
+    expect(await screen.findByText('Mostrando 101–150 de 1.234 operações')).toBeInTheDocument();
+    expect(lastRequest()).toEqual({
+      from: '2026-09-01',
+      to: '2026-09-30',
+      assignorId: acme.id,
+      currency: 'USD',
+      status: 'PENDING',
+      page: '2',
+      size: '50',
+      sort: 'assignorName,asc',
+    });
+    expect(screen.getByRole('columnheader', { name: /Cedente/ })).toHaveAttribute(
+      'aria-sort',
+      'ascending',
+    );
+    // the assignor filter shows the assignor loaded by id
+    expect(
+      await screen.findByDisplayValue('ACME Indústria Ltda · 11.222.333/0001-81'),
+    ).toBeVisible();
+  });
+
+  it('filters by status: new request, URL updated and back to the first page', async () => {
+    const { user, router } = renderExplorer('/transacoes?page=3');
+    await screen.findByText('Mostrando 61–80 de 1.234 operações');
+
+    await user.click(screen.getByRole('combobox', { name: 'Status' }));
+    await user.click(await screen.findByRole('option', { name: 'Liquidada' }));
+
+    await waitFor(() => {
+      expect(lastRequest()).toEqual({
+        status: 'SETTLED',
+        page: '0',
+        size: '20',
+        sort: 'createdAt,desc',
+      });
+    });
+    expect(router.state.location.search).toBe('?status=SETTLED');
   });
 
   it('paginates and sorts on the server', async () => {

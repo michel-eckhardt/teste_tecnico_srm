@@ -2,20 +2,24 @@ import { Button, Drawer, Paper, Stack } from '@mantine/core';
 import { IconFilterOff } from '@tabler/icons-react';
 import { useSearchParams } from 'react-router';
 
+import { AssignorPicker, useAssignor } from '@/features/assignors';
 import { CreditAssignmentView } from '@/features/credit-assignments';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { ErrorAlert } from '@/shared/ui/ErrorAlert';
 
+import { StatementFiltersBar } from '../components/StatementFiltersBar';
 import { StatementTable } from '../components/StatementTable';
 import { useStatement, useStatementFilters } from '../hooks/useStatement';
 import { hasActiveFilters } from '../model/statement-filters';
 
 const OPERATION_PARAM = 'operacao';
 
-/** Settlement statement: server-side sorting/pagination (state in the URL) and a detail drawer. */
+/** Settlement statement: URL-synced filters, server-side sorting/pagination and a detail drawer. */
 export function TransactionsExplorer() {
-  const { filters, changePage, changePageSize, changeSort, reset } = useStatementFilters();
+  const { filters, changeFilters, changePage, changePageSize, changeSort, reset } =
+    useStatementFilters();
   const statement = useStatement(filters);
+  const assignor = useAssignor(filters.assignorId ?? null);
   const [searchParams, setSearchParams] = useSearchParams();
   const openOperation = searchParams.get(OPERATION_PARAM);
 
@@ -33,6 +37,23 @@ export function TransactionsExplorer() {
 
   return (
     <Stack gap="md">
+      <Paper withBorder p="md">
+        <StatementFiltersBar
+          filters={filters}
+          onChange={changeFilters}
+          onReset={reset}
+          assignorFilter={
+            <AssignorPicker
+              label="Cedente"
+              value={filters.assignorId ? (assignor.data ?? null) : null}
+              onChange={(selected) => {
+                changeFilters({ assignorId: selected?.id });
+              }}
+            />
+          }
+        />
+      </Paper>
+
       {statement.isError ? (
         <ErrorAlert
           error={statement.error}
