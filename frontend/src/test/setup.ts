@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 
+import { notifications } from '@mantine/notifications';
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 
@@ -40,6 +41,8 @@ beforeAll(() => {
 });
 afterEach(() => {
   cleanup();
+  // Mantine keeps notifications in a module-level store: do not leak toasts into the next test.
+  notifications.clean();
   server.resetHandlers();
 });
 afterAll(() => {
