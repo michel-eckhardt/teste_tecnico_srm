@@ -27,3 +27,37 @@ export async function createCreditAssignment(
   // 201 = created now; 200 = the same key/payload was already processed (safe replay).
   return { ...versioned(data, response), replayed: response.status === 200 };
 }
+
+export async function fetchCreditAssignment(
+  id: string,
+  signal?: AbortSignal,
+): Promise<VersionedOperation> {
+  const { data, response } = await send(
+    apiClient.GET('/api/v1/credit-assignments/{id}', { params: { path: { id } }, signal }),
+  );
+  return versioned(data, response);
+}
+
+export async function settleCreditAssignment(
+  id: string,
+  etag: string,
+): Promise<VersionedOperation> {
+  const { data, response } = await send(
+    apiClient.POST('/api/v1/credit-assignments/{id}/settlement', {
+      params: { path: { id }, header: { 'If-Match': etag } },
+    }),
+  );
+  return versioned(data, response);
+}
+
+export async function cancelCreditAssignment(
+  id: string,
+  etag: string,
+): Promise<VersionedOperation> {
+  const { data, response } = await send(
+    apiClient.POST('/api/v1/credit-assignments/{id}/cancellation', {
+      params: { path: { id }, header: { 'If-Match': etag } },
+    }),
+  );
+  return versioned(data, response);
+}

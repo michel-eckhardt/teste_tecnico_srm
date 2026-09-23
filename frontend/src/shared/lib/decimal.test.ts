@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  addDecimals,
   formatDecimal,
   formatPercent,
   formatRate,
@@ -49,5 +50,15 @@ describe('parseDecimalInput', () => {
     expect(isPositiveDecimal('0.00000001')).toBe(true);
     expect(isPositiveDecimal('0')).toBe(false);
     expect(isPositiveDecimal('0.000')).toBe(false);
+  });
+});
+
+describe('addDecimals', () => {
+  it('adds rates exactly, keeping the larger scale', () => {
+    expect(addDecimals('0.01000000', '0.01500000')).toBe('0.02500000');
+    expect(addDecimals('0.1', '0.2')).toBe('0.3');
+    expect(addDecimals('0.005', '0.0250')).toBe('0.0300');
+    expect(addDecimals('12', '3')).toBe('15');
+    expect(addDecimals('9.99999999', '0.00000001')).toBe('10.00000000');
   });
 });

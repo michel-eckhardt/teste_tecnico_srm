@@ -53,3 +53,21 @@ export function parseDecimalInput(
 export function isPositiveDecimal(value: DecimalString): boolean {
   return /[1-9]/.test(value) && !value.startsWith('-');
 }
+
+/** Exact sum of two non-negative decimal strings, keeping the larger scale (`"0.010"` + `"0.0150"` → `"0.0250"`). */
+export function addDecimals(a: DecimalString, b: DecimalString): DecimalString {
+  const scale = Math.max(fractionDigits(a), fractionDigits(b));
+  const units = toScaledUnits(a, scale) + toScaledUnits(b, scale);
+  if (scale === 0) return units.toString();
+  const text = units.toString().padStart(scale + 1, '0');
+  return `${text.slice(0, -scale)}.${text.slice(-scale)}`;
+}
+
+function fractionDigits(value: DecimalString): number {
+  return value.split('.')[1]?.length ?? 0;
+}
+
+function toScaledUnits(value: DecimalString, scale: number): bigint {
+  const [integer = '0', fraction = ''] = value.split('.');
+  return BigInt(integer) * 10n ** BigInt(scale) + BigInt(fraction.padEnd(scale, '0') || '0');
+}
