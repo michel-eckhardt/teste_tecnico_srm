@@ -111,11 +111,15 @@ srm:
     sync:
       enabled: ${FX_SYNC_ENABLED:true}
 ---
-# Demo: same as docker regarding FX (can be combined with the docker profile).
+# Demo: loads a large deterministic dataset (db/demo) for the statement report; combinable with docker.
 spring:
   config:
     activate:
       on-profile: demo
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
+    # the demo migration (V1000) may precede future schema migrations on an existing demo database
+    out-of-order: true
 srm:
   fx:
     sync:
