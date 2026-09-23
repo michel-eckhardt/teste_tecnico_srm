@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.srm.creditengine.domain.common.BusinessClock;
+import com.srm.creditengine.domain.common.BusinessMetrics;
 import com.srm.creditengine.domain.common.BusinessProperties;
 import com.srm.creditengine.domain.currency.Currency;
 import com.srm.creditengine.domain.currency.CurrencyCode;
@@ -23,6 +24,7 @@ import com.srm.creditengine.domain.currency.ExchangeRateService;
 import com.srm.creditengine.domain.currency.ExchangeRateSource;
 import com.srm.creditengine.domain.currency.ExchangeRateStaleException;
 import com.srm.creditengine.persistence.CurrencyRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -69,6 +71,7 @@ class PricingEngineTest {
                 exchangeRates,
                 currencies,
                 clock,
+                new BusinessMetrics(new SimpleMeterRegistry()),
                 new PricingProperties(1825, baseRates));
     }
 

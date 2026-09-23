@@ -1,6 +1,9 @@
 package com.srm.creditengine.domain.assignment;
 
+import com.srm.creditengine.domain.common.BusinessMetrics;
+import com.srm.creditengine.domain.common.StaleVersionException;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -22,9 +25,11 @@ import org.springframework.stereotype.Service;
 public class SettlementService {
 
     private final SettlementTransactions transactions;
+    private final BusinessMetrics metrics;
 
-    SettlementService(SettlementTransactions transactions) {
+    SettlementService(SettlementTransactions transactions, BusinessMetrics metrics) {
         this.transactions = transactions;
+        this.metrics = metrics;
     }
 
     /**
@@ -41,7 +46,9 @@ public class SettlementService {
             multiplierString = "${srm.settlement.retry.multiplier:2}",
             maxDelayString = "${srm.settlement.retry.max-delay:1s}")
     public CreditAssignment settle(UUID operationId, long expectedVersion) {
-        return transactions.settle(operationId, expectedVersion);
+        CreditAssignment settled = recordingConflicts(() -> transactions.settle(operationId, expectedVersion));
+        metrics.creditAssignmentSettled(settled.getPaymentCurrency().name());
+        return settled;
     }
 
     /** PENDING -> CANCELLED. */
@@ -53,6 +60,25 @@ public class SettlementService {
             multiplierString = "${srm.settlement.retry.multiplier:2}",
             maxDelayString = "${srm.settlement.retry.max-delay:1s}")
     public CreditAssignment cancel(UUID operationId, long expectedVersion) {
-        return transactions.cancel(operationId, expectedVersion);
+        return recordingConflicts(() -> transactions.cancel(operationId, expectedVersion));
+    }
+
+    /** Runs once per attempt, so every optimistic locking collision is counted, retried or not. */
+    private CreditAssignment recordingConflicts(Supplier<CreditAssignment> command) {
+        try {
+            return command.get();
+        } catch (StaleVersionException conflict) {
+            metrics.settlementConflict("stale_version");
+            throw conflict;
+        } catch (OperationAlreadySettledException conflict) {
+            metrics.settlementConflict("already_settled");
+            throw conflict;
+        } catch (InvalidStateTransitionException conflict) {
+            metrics.settlementConflict("invalid_state");
+            throw conflict;
+        } catch (OptimisticLockingFailureException conflict) {
+            metrics.settlementConflict("optimistic_lock");
+            throw conflict;
+        }
     }
 }

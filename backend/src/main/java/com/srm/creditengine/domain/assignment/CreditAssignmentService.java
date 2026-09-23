@@ -1,5 +1,6 @@
 package com.srm.creditengine.domain.assignment;
 
+import com.srm.creditengine.domain.common.BusinessMetrics;
 import com.srm.creditengine.domain.common.ResourceNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,12 +24,23 @@ public class CreditAssignmentService {
     private static final Logger log = LoggerFactory.getLogger(CreditAssignmentService.class);
 
     private final CreditAssignmentTransactions transactions;
+    private final BusinessMetrics metrics;
 
-    CreditAssignmentService(CreditAssignmentTransactions transactions) {
+    CreditAssignmentService(CreditAssignmentTransactions transactions, BusinessMetrics metrics) {
         this.transactions = transactions;
+        this.metrics = metrics;
     }
 
     public CreationResult create(NewCreditAssignment command, @Nullable String idempotencyKey) {
+        CreationResult result = createOrReplay(command, idempotencyKey);
+        if (result.created()) {
+            metrics.creditAssignmentCreated(
+                    result.assignment().getPaymentCurrency().name());
+        }
+        return result;
+    }
+
+    private CreationResult createOrReplay(NewCreditAssignment command, @Nullable String idempotencyKey) {
         if (idempotencyKey == null) {
             return new CreationResult(transactions.open(command, null), true);
         }

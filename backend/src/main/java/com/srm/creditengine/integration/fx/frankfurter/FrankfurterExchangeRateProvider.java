@@ -1,11 +1,13 @@
 package com.srm.creditengine.integration.fx.frankfurter;
 
+import com.srm.creditengine.domain.common.BusinessMetrics;
 import com.srm.creditengine.domain.currency.CurrencyCode;
 import com.srm.creditengine.domain.currency.ExchangeRateProvider;
 import com.srm.creditengine.domain.currency.FxProviderUnavailableException;
 import com.srm.creditengine.domain.currency.ProvidedRate;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -24,26 +26,37 @@ class FrankfurterExchangeRateProvider implements ExchangeRateProvider {
 
     private static final Logger log = LoggerFactory.getLogger(FrankfurterExchangeRateProvider.class);
 
-    private final FrankfurterClient client;
+    private static final String PROVIDER = "frankfurter";
 
-    FrankfurterExchangeRateProvider(FrankfurterClient client) {
+    private final FrankfurterClient client;
+    private final BusinessMetrics metrics;
+
+    FrankfurterExchangeRateProvider(FrankfurterClient client, BusinessMetrics metrics) {
         this.client = client;
+        this.metrics = metrics;
     }
 
     @Override
     public List<ProvidedRate> fetchLatest(CurrencyCode base, Set<CurrencyCode> quotes) {
         List<String> symbols = quotes.stream().map(Enum::name).sorted().toList();
-        FrankfurterLatestResponse response;
+        long start = System.nanoTime();
+        String outcome = "failure";
         try {
-            response = client.latest(base.name(), symbols);
+            FrankfurterLatestResponse response = client.latest(base.name(), symbols);
+            outcome = "invalid_payload";
+            List<ProvidedRate> rates = toProvidedRates(response, base, quotes);
+            outcome = "success";
+            return rates;
         } catch (CallNotPermittedException open) {
+            outcome = "rejected";
             log.warn("Frankfurter call rejected: circuit breaker is open");
             throw new FxProviderUnavailableException("circuit breaker aberto", open);
         } catch (RestClientException failure) {
             log.warn("Frankfurter call failed: {}", failure.getMessage());
             throw new FxProviderUnavailableException("falha na chamada HTTP", failure);
+        } finally {
+            metrics.fxProviderCall(PROVIDER, outcome, Duration.ofNanos(System.nanoTime() - start));
         }
-        return toProvidedRates(response, base, quotes);
     }
 
     private static List<ProvidedRate> toProvidedRates(

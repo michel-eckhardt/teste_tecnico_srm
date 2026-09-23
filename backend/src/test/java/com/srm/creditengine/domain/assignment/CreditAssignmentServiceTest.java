@@ -12,7 +12,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.srm.creditengine.domain.assignor.Assignor;
+import com.srm.creditengine.domain.common.BusinessMetrics;
 import com.srm.creditengine.domain.common.ResourceNotFoundException;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,7 +34,9 @@ class CreditAssignmentServiceTest {
                     "DUPLICATA_MERCANTIL", new BigDecimal("10000.00"), BRL, LocalDate.of(2026, 12, 22))));
 
     private final CreditAssignmentTransactions transactions = mock(CreditAssignmentTransactions.class);
-    private final CreditAssignmentService service = new CreditAssignmentService(transactions);
+    private final SimpleMeterRegistry meters = new SimpleMeterRegistry();
+    private final CreditAssignmentService service =
+            new CreditAssignmentService(transactions, new BusinessMetrics(meters));
 
     private static CreditAssignment storedWith(String requestHash) {
         return CreditAssignment.open(
@@ -52,6 +56,9 @@ class CreditAssignmentServiceTest {
 
         assertThat(result.created()).isTrue();
         assertThat(result.assignment()).isSameAs(created);
+        assertThat(meters.counter(BusinessMetrics.ASSIGNMENTS_CREATED, "payment_currency", "BRL")
+                        .count())
+                .isEqualTo(1);
     }
 
     @Test
@@ -75,6 +82,7 @@ class CreditAssignmentServiceTest {
         assertThat(result.created()).isFalse();
         assertThat(result.assignment()).isSameAs(original);
         verify(transactions, never()).open(any(), any());
+        assertThat(meters.find(BusinessMetrics.ASSIGNMENTS_CREATED).counter()).isNull();
     }
 
     @Test

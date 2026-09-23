@@ -2,6 +2,7 @@ package com.srm.creditengine.domain.pricing;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.srm.creditengine.domain.common.BusinessClock;
+import com.srm.creditengine.domain.common.BusinessMetrics;
 import com.srm.creditengine.domain.currency.Currency;
 import com.srm.creditengine.domain.currency.CurrencyCode;
 import com.srm.creditengine.domain.currency.CurrencyConversion;
@@ -50,6 +51,7 @@ public class PricingEngine {
     private final ExchangeRateService exchangeRates;
     private final CurrencyRepository currencies;
     private final BusinessClock clock;
+    private final BusinessMetrics metrics;
     private final int maxTermDays;
     private final Map<CurrencyCode, BigDecimal> baseRates;
 
@@ -58,11 +60,13 @@ public class PricingEngine {
             ExchangeRateService exchangeRates,
             CurrencyRepository currencies,
             BusinessClock clock,
+            BusinessMetrics metrics,
             PricingProperties properties) {
         this.strategies = strategies;
         this.exchangeRates = exchangeRates;
         this.currencies = currencies;
         this.clock = clock;
+        this.metrics = metrics;
         this.maxTermDays = properties.maxTermDays();
         this.baseRates = new EnumMap<>(CurrencyCode.class);
         properties.baseRates().forEach((currency, rate) -> baseRates.put(currency, rate.setScale(RATE_SCALE)));
@@ -80,8 +84,10 @@ public class PricingEngine {
      */
     @Transactional(readOnly = true)
     public List<PricedReceivable> price(List<ReceivableTerms> receivables, CurrencyCode paymentCurrency) {
-        Batch batch = new Batch(clock.today(), paymentCurrency, currencyDecimals());
-        return receivables.stream().map(batch::price).toList();
+        return metrics.timePricing(paymentCurrency.name(), () -> {
+            Batch batch = new Batch(clock.today(), paymentCurrency, currencyDecimals());
+            return receivables.stream().map(batch::price).toList();
+        });
     }
 
     private Map<CurrencyCode, Integer> currencyDecimals() {
