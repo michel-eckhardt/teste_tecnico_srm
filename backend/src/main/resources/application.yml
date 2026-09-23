@@ -31,6 +31,44 @@ server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,circuitbreakers
+  endpoint:
+    health:
+      # No authentication in this challenge: in production the actuator port stays on the internal network.
+      show-details: always
+      probes:
+        enabled: true
+      group:
+        # Liveness never depends on external systems (a restart would not fix them).
+        liveness:
+          include: livenessState
+        # Ready = able to serve requests, which needs the database; the FX provider is deliberately
+        # excluded: pricing keeps working on the last persisted rate while Frankfurter is down.
+        readiness:
+          include: readinessState,db
+  health:
+    circuitbreakers:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Plataforma de cessão de crédito multimoedas (FIDC)
+
 srm:
   business:
     # Business dates (operation date, report periods) are evaluated in this zone; instants stay UTC.
@@ -99,7 +137,9 @@ resilience4j:
         # A 4xx means our request is wrong, not that the provider is unhealthy.
         ignore-exceptions:
           - org.springframework.web.client.HttpClientErrorException
+        # Shown in /actuator/health, but an open circuit must not turn the application DOWN.
         register-health-indicator: true
+        allow-health-indicator-to-fail: false
 ---
 # Container runtime (docker compose): the provider is reachable, keep rates fresh automatically.
 spring:
