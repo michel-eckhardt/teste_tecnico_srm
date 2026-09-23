@@ -1,6 +1,7 @@
 import { Grid, Stack } from '@mantine/core';
 
 import { CurrentRates, ManualRatePanel, RateHistory } from '@/features/exchange-rates';
+import { CashBalancesCard } from '@/features/treasury';
 import { PageHeader } from '@/shared/ui/PageHeader';
 
 export function ExchangeRatesPage() {
@@ -8,7 +9,7 @@ export function ExchangeRatesPage() {
     <>
       <PageHeader
         title="Câmbio"
-        description="Taxas vigentes (publicadas ou derivadas do par inverso), sincronização com a Frankfurter e atualização manual."
+        description="Taxas vigentes (publicadas ou derivadas do par inverso), sincronização com a Frankfurter, atualização manual e saldos do fundo."
       />
       <Stack gap="lg">
         <CurrentRates />
@@ -16,6 +17,7 @@ export function ExchangeRatesPage() {
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Stack gap="md">
               <ManualRatePanel />
+              <CashBalancesCard />
             </Stack>
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
