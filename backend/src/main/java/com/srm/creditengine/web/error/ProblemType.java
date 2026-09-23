@@ -20,6 +20,7 @@ public enum ProblemType {
     DUPLICATE_ASSIGNOR(HttpStatus.CONFLICT, "Cedente já cadastrado"),
     OPERATION_ALREADY_SETTLED(HttpStatus.CONFLICT, "Operação já liquidada"),
     INVALID_STATE_TRANSITION(HttpStatus.CONFLICT, "Transição de estado inválida"),
+    IDEMPOTENCY_KEY_REUSED(HttpStatus.CONFLICT, "Chave de idempotência reutilizada"),
     PRECONDITION_FAILED(HttpStatus.PRECONDITION_FAILED, "Versão desatualizada"),
     INSUFFICIENT_FUNDS(HttpStatus.UNPROCESSABLE_CONTENT, "Saldo insuficiente"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Tipo de conteúdo não suportado"),
@@ -55,6 +56,7 @@ public enum ProblemType {
             case INVALID_STATE_TRANSITION -> INVALID_STATE_TRANSITION;
             case PRECONDITION_FAILED -> PRECONDITION_FAILED;
             case INSUFFICIENT_FUNDS -> INSUFFICIENT_FUNDS;
+            case IDEMPOTENCY_KEY_REUSED -> IDEMPOTENCY_KEY_REUSED;
         };
     }
 

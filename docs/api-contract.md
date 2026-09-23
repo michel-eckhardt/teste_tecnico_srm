@@ -115,7 +115,7 @@ Fórmula: `presentValue = faceValue / (1 + baseRate + spread) ^ termMonths`, `te
 
 ### Operações de cessão (lote de recebíveis)
 `POST /credit-assignments` — header `Idempotency-Key` → `201` + `Location` + `ETag` | `400` | `404` (cedente) | `409` (`IDEMPOTENCY_KEY_REUSED` com payload diferente) | `422`
-Repetir a mesma chave com o mesmo payload devolve a operação já criada (`200`).
+Repetir a mesma chave com o mesmo payload devolve a operação já criada (`200`, com `ETag` e `Content-Location`). Valores numericamente iguais (`"10000.00"` e `"10000"`) são considerados o mesmo payload. Formato da chave: `[A-Za-z0-9._:-]{1,100}`.
 ```json
 {
   "assignorId": "0192...",
@@ -141,10 +141,10 @@ Resposta (`CreditAssignment`), também em `GET /credit-assignments/{id}` (com `E
       "dueDate": "2026-12-22", "termDays": 90, "baseRate": "0.01000000", "spread": "0.01500000",
       "presentValue": "9285.99", "discount": "714.01", "exchangeRate": null, "netAmount": "9285.99" }
   ],
-  "createdAt": "2026-09-23T14:05:00Z", "settledAt": null
+  "createdAt": "2026-09-23T14:05:00Z", "settledAt": null, "cancelledAt": null
 }
 ```
-`status`: `PENDING` | `SETTLED` | `CANCELLED`. Totais expressos na moeda de pagamento.
+`status`: `PENDING` | `SETTLED` | `CANCELLED`. Totais expressos na moeda de pagamento (`totalFaceValue = totalDiscount + totalNetAmount`); `presentValue`/`discount` de cada recebível estão na moeda de face e `netAmount` na moeda de pagamento. `cancelledAt` é preenchido quando a operação é cancelada.
 
 `POST /credit-assignments/{id}/settlement` — header `If-Match: "<version>"` **obrigatório**
 → `200` (operação `SETTLED`, novo `ETag`) | `404` | `409` (já liquidada/cancelada, conflito concorrente) | `412` | `422` (`INSUFFICIENT_FUNDS`) | `428`
