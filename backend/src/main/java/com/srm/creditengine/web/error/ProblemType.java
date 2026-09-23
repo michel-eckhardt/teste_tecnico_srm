@@ -18,6 +18,10 @@ public enum ProblemType {
     CONFLICT(HttpStatus.CONFLICT, "Conflito"),
     CONCURRENT_MODIFICATION(HttpStatus.CONFLICT, "Modificação concorrente"),
     DUPLICATE_ASSIGNOR(HttpStatus.CONFLICT, "Cedente já cadastrado"),
+    OPERATION_ALREADY_SETTLED(HttpStatus.CONFLICT, "Operação já liquidada"),
+    INVALID_STATE_TRANSITION(HttpStatus.CONFLICT, "Transição de estado inválida"),
+    PRECONDITION_FAILED(HttpStatus.PRECONDITION_FAILED, "Versão desatualizada"),
+    INSUFFICIENT_FUNDS(HttpStatus.UNPROCESSABLE_CONTENT, "Saldo insuficiente"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Tipo de conteúdo não suportado"),
     EXCHANGE_RATE_UNAVAILABLE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio indisponível"),
     EXCHANGE_RATE_STALE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio desatualizada"),
@@ -47,6 +51,10 @@ public enum ProblemType {
             case INVALID_DUE_DATE -> INVALID_DUE_DATE;
             case UNSUPPORTED_RECEIVABLE_TYPE -> UNSUPPORTED_RECEIVABLE_TYPE;
             case DUPLICATE_ASSIGNOR -> DUPLICATE_ASSIGNOR;
+            case OPERATION_ALREADY_SETTLED -> OPERATION_ALREADY_SETTLED;
+            case INVALID_STATE_TRANSITION -> INVALID_STATE_TRANSITION;
+            case PRECONDITION_FAILED -> PRECONDITION_FAILED;
+            case INSUFFICIENT_FUNDS -> INSUFFICIENT_FUNDS;
         };
     }
 
