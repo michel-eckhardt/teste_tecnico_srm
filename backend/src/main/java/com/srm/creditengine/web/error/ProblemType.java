@@ -17,6 +17,7 @@ public enum ProblemType {
     NOT_ACCEPTABLE(HttpStatus.NOT_ACCEPTABLE, "Formato de resposta não suportado"),
     CONFLICT(HttpStatus.CONFLICT, "Conflito"),
     CONCURRENT_MODIFICATION(HttpStatus.CONFLICT, "Modificação concorrente"),
+    DUPLICATE_ASSIGNOR(HttpStatus.CONFLICT, "Cedente já cadastrado"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Tipo de conteúdo não suportado"),
     EXCHANGE_RATE_UNAVAILABLE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio indisponível"),
     EXCHANGE_RATE_STALE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio desatualizada"),
@@ -45,6 +46,7 @@ public enum ProblemType {
             case FX_PROVIDER_UNAVAILABLE -> FX_PROVIDER_UNAVAILABLE;
             case INVALID_DUE_DATE -> INVALID_DUE_DATE;
             case UNSUPPORTED_RECEIVABLE_TYPE -> UNSUPPORTED_RECEIVABLE_TYPE;
+            case DUPLICATE_ASSIGNOR -> DUPLICATE_ASSIGNOR;
         };
     }
 
