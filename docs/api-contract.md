@@ -66,11 +66,14 @@ Convenção: `rate` = quantas unidades de `quote` valem 1 unidade de `base` (ex.
 `GET /exchange-rates/latest?base=USD&quote=BRL` → `200` | `404`
 ```json
 { "id": "0192...", "base": "USD", "quote": "BRL", "rate": "5.13220000", "source": "FRANKFURTER",
-  "referenceDate": "2026-09-23", "createdAt": "2026-09-23T14:05:00Z", "stale": false }
+  "referenceDate": "2026-09-23", "createdAt": "2026-09-23T14:05:00Z", "stale": false, "derived": false }
 ```
 `source`: `MANUAL` | `FRANKFURTER` | `SEED`. `stale = true` quando a taxa é mais antiga que o limite configurado.
+`derived = true` quando a taxa foi derivada do par inverso (ex.: `BRL/USD` calculada como `1 / USD/BRL`; `id` aponta para a observação persistida do par inverso).
 
 `GET /exchange-rates?base=USD&quote=BRL&page=0&size=20` → `200` página do histórico (mais recente primeiro).
+
+`GET /exchange-rates/{id}` → `200` | `404` (alvo do `Location` devolvido pelo cadastro manual).
 
 `POST /exchange-rates` (atualização manual) → `201` + `Location` | `400`
 ```json

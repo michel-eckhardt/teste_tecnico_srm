@@ -97,7 +97,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         List<FieldViolation> violations = new ArrayList<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            violations.add(new FieldViolation(error.getField(), error.getDefaultMessage()));
+            violations.add(new FieldViolation(error.getField(), messageOf(error)));
         }
         for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
             violations.add(new FieldViolation(error.getObjectName(), error.getDefaultMessage()));
@@ -112,8 +112,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ex.getParameterValidationResults().forEach(result -> {
             String name = result.getMethodParameter().getParameterName();
             for (MessageSourceResolvable error : result.getResolvableErrors()) {
-                String field = error instanceof FieldError fieldError ? fieldError.getField() : name;
-                violations.add(new FieldViolation(field, error.getDefaultMessage()));
+                if (error instanceof FieldError fieldError) {
+                    violations.add(new FieldViolation(fieldError.getField(), messageOf(fieldError)));
+                } else {
+                    violations.add(new FieldViolation(name, error.getDefaultMessage()));
+                }
             }
         });
         return problem(
@@ -231,6 +234,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             }
         }
         return "/";
+    }
+
+    /** Conversion failures (e.g. "EUR" for a currency) must not expose the framework message. */
+    private static String messageOf(FieldError error) {
+        return error.isBindingFailure()
+                ? "valor '%s' possui formato inválido".formatted(error.getRejectedValue())
+                : error.getDefaultMessage();
     }
 
     private static String jsonPath(JacksonException ex) {
