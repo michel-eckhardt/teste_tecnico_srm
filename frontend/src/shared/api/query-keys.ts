@@ -1,6 +1,7 @@
 import type { CurrencyCode, SimulationRequest } from './contract';
 
 const referenceData = ['reference-data'] as const;
+const pricing = ['pricing-simulation'] as const;
 const assignors = ['assignors'] as const;
 const creditAssignments = ['credit-assignments'] as const;
 const statement = ['settlement-statement'] as const;
@@ -19,7 +20,8 @@ export const queryKeys = {
     receivableTypes: () => [...referenceData, 'receivable-types'] as const,
   },
   pricing: {
-    simulation: (request: SimulationRequest | null) => ['pricing-simulation', request] as const,
+    all: pricing,
+    simulation: (request: SimulationRequest | null) => [...pricing, request] as const,
   },
   assignors: {
     all: assignors,
