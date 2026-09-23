@@ -48,6 +48,11 @@ srm:
       cron: "0 5 * * * *"
       base: USD
       quotes: BRL
+  pricing:
+    # Monthly risk spread of each receivable type (one PricingStrategy per type).
+    spreads:
+      duplicata-mercantil: "0.015"
+      cheque-pre-datado: "0.025"
 
 # Resilience of the Frankfurter call. Retry wraps the circuit breaker, so each attempt counts as a call.
 resilience4j:
