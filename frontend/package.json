@@ -17,7 +17,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "gen:api": "openapi-typescript http://localhost:8080/v3/api-docs -o src/shared/api/schema.d.ts"
   },
   "dependencies": {
     "react": "^19.3.0",
@@ -42,6 +43,7 @@
     "globals": "^17.12.0",
     "jsdom": "^29.1.1",
     "msw": "^2.15.0",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.9",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.70.1",
