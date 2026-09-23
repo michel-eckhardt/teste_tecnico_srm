@@ -49,6 +49,12 @@ srm:
       base: USD
       quotes: BRL
   pricing:
+    # Longest accepted term between the operation date and the due date (5 years).
+    max-term-days: 1825
+    # Monthly base rate (funding cost) per face currency.
+    base-rates:
+      BRL: "0.01"
+      USD: "0.005"
     # Monthly risk spread of each receivable type (one PricingStrategy per type).
     spreads:
       duplicata-mercantil: "0.015"

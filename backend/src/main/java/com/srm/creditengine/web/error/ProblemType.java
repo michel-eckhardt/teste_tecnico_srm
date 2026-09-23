@@ -20,6 +20,7 @@ public enum ProblemType {
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Tipo de conteúdo não suportado"),
     EXCHANGE_RATE_UNAVAILABLE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio indisponível"),
     EXCHANGE_RATE_STALE(HttpStatus.UNPROCESSABLE_CONTENT, "Taxa de câmbio desatualizada"),
+    INVALID_DUE_DATE(HttpStatus.UNPROCESSABLE_CONTENT, "Data de vencimento inválida"),
     PRECONDITION_REQUIRED(HttpStatus.PRECONDITION_REQUIRED, "Pré-condição obrigatória"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno"),
     FX_PROVIDER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Provedor de câmbio indisponível");
@@ -41,6 +42,7 @@ public enum ProblemType {
             case EXCHANGE_RATE_UNAVAILABLE -> EXCHANGE_RATE_UNAVAILABLE;
             case EXCHANGE_RATE_STALE -> EXCHANGE_RATE_STALE;
             case FX_PROVIDER_UNAVAILABLE -> FX_PROVIDER_UNAVAILABLE;
+            case INVALID_DUE_DATE -> INVALID_DUE_DATE;
         };
     }
 
