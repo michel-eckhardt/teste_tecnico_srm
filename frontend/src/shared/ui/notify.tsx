@@ -1,5 +1,5 @@
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconX } from '@tabler/icons-react';
+import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react';
 
 import { toApiError } from '@/shared/api/api-error';
 
@@ -24,4 +24,8 @@ export function notifyError(error: unknown, title?: string) {
 
 export function notifySuccess(title: string, message?: string) {
   notifications.show({ color: 'teal', icon: <IconCheck size={18} />, title, message });
+}
+
+export function notifyWarning(title: string, message?: string) {
+  notifications.show({ color: 'yellow', icon: <IconAlertTriangle size={18} />, title, message });
 }
