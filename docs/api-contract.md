@@ -38,6 +38,7 @@ Contrato definido **antes** da implementação (API First). A especificação Op
 | 400 `VALIDATION_ERROR` / `MALFORMED_REQUEST` | payload inválido, campos obrigatórios, formato |
 | 404 `RESOURCE_NOT_FOUND` | recurso inexistente |
 | 409 `CONFLICT` / `OPERATION_ALREADY_SETTLED` / `INVALID_STATE_TRANSITION` / `CONCURRENT_MODIFICATION` / `DUPLICATE_ASSIGNOR` / `IDEMPOTENCY_KEY_REUSED` | conflito de estado |
+| 405 `METHOD_NOT_ALLOWED` / 406 `NOT_ACCEPTABLE` / 415 `UNSUPPORTED_MEDIA_TYPE` | erros de protocolo HTTP (mesmo formato de problema) |
 | 412 `PRECONDITION_FAILED` | `If-Match` não corresponde à versão atual |
 | 422 `INSUFFICIENT_FUNDS` / `EXCHANGE_RATE_UNAVAILABLE` / `EXCHANGE_RATE_STALE` / `UNSUPPORTED_RECEIVABLE_TYPE` / `INVALID_DUE_DATE` | regra de negócio violada |
 | 428 `PRECONDITION_REQUIRED` | `If-Match` ausente |
