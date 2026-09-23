@@ -1,7 +1,8 @@
 import { fileURLToPath, URL } from 'node:url';
 
 import react from '@vitejs/plugin-react';
-import { defineConfig, loadEnv, type ProxyOptions } from 'vite';
+import { loadEnv, type ProxyOptions } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig(({ mode }) => {
   // The SPA only ever calls same-origin `/api/...`; in development the Vite server proxies it to the
@@ -39,6 +40,18 @@ export default defineConfig(({ mode }) => {
             ],
           },
         },
+      },
+    },
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./src/test/setup.ts'],
+      include: ['src/**/*.test.{ts,tsx}'],
+      restoreMocks: true,
+      unstubGlobals: true,
+      coverage: {
+        provider: 'v8',
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/main.tsx', 'src/**/*.d.ts'],
       },
     },
   };
