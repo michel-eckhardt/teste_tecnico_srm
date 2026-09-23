@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'msw';
 
 import { assignorHandlers } from './assignors';
+import { creditAssignmentHandlers } from './credit-assignments';
 import { pricingHandlers } from './pricing';
 import { referenceDataHandlers } from './reference-data';
 
@@ -12,4 +13,5 @@ export const handlers: RequestHandler[] = [
   ...referenceDataHandlers,
   ...pricingHandlers,
   ...assignorHandlers,
+  ...creditAssignmentHandlers,
 ];
