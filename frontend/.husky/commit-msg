@@ -1,0 +1,2 @@
+# Conventional Commits (type(scope): subject), validated by commitlint.
+frontend/node_modules/.bin/commitlint --config frontend/commitlint.config.js --edit "$1"
