@@ -65,6 +65,13 @@ class ActuatorIT {
     }
 
     @Test
+    void publishesHttpLatencyHistogramsForPercentileDashboards() {
+        get("/api/v1/currencies");
+
+        assertThat(get("/actuator/prometheus")).contains("http_server_requests_seconds_bucket{");
+    }
+
+    @Test
     void exposesBuildInfoAndCircuitBreakers() {
         assertThat(get("/actuator/info")).contains("\"build\"").contains("credit-engine");
         assertThat(get("/actuator/circuitbreakers")).contains("frankfurter");

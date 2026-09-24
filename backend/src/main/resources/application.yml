@@ -68,6 +68,10 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+    distribution:
+      # Latency histograms, so Prometheus/Grafana compute p95/p99 across instances (histogram_quantile).
+      percentiles-histogram:
+        http.server.requests: true
   tracing:
     # Micrometer Tracing (OpenTelemetry bridge) puts traceId/spanId in the MDC of every log line.
     # Spans are not exported anywhere (no exporter dependency); TRACING_ENABLED=false turns it off.
