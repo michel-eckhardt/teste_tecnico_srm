@@ -69,6 +69,7 @@ Convenção: `rate` = quantas unidades de `quote` valem 1 unidade de `base` (ex.
   "referenceDate": "2026-09-23", "createdAt": "2026-09-23T14:05:00Z", "stale": false, "derived": false }
 ```
 `source`: `MANUAL` | `FRANKFURTER` | `SEED`. `stale = true` quando a taxa é mais antiga que o limite configurado.
+Taxas observadas (`FRANKFURTER`/`MANUAL`) sempre têm precedência sobre a `SEED` (carga inicial para operar offline), qualquer que seja a data de referência; a `SEED` só é usada enquanto nenhuma taxa foi observada.
 `derived = true` quando a taxa foi derivada do par inverso (ex.: `BRL/USD` calculada como `1 / USD/BRL`; `id` aponta para a observação persistida do par inverso).
 
 `GET /exchange-rates?base=USD&quote=BRL&page=0&size=20` → `200` página do histórico (mais recente primeiro).

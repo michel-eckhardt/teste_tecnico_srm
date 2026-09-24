@@ -65,6 +65,46 @@ class ExchangeRateServiceTest {
                 .thenReturn(Optional.ofNullable(rate));
     }
 
+    private void stubLatestObserved(CurrencyCode base, CurrencyCode quote, ExchangeRate rate) {
+        when(rates.findFirstByBaseCurrencyAndQuoteCurrencyAndSourceNotOrderByReferenceDateDescCreatedAtDesc(
+                        base, quote, ExchangeRateSource.SEED))
+                .thenReturn(Optional.ofNullable(rate));
+    }
+
+    private static ExchangeRate seed(CurrencyCode base, CurrencyCode quote, String value, LocalDate date) {
+        return ExchangeRate.of(
+                base,
+                quote,
+                new BigDecimal(value),
+                ExchangeRateSource.SEED,
+                date,
+                date.atStartOfDay().toInstant(ZoneOffset.UTC));
+    }
+
+    @Test
+    void anObservedRatePrevailsOverANewerSeed() {
+        // deploy day: the seed is dated today, the ECB has only published yesterday's rate so far
+        stubLatestObserved(USD, BRL, rate(USD, BRL, "5.1322", LocalDate.of(2026, 9, 22)));
+        stubLatestObserved(BRL, USD, null);
+        stubLatest(USD, BRL, seed(USD, BRL, "5.0000", LocalDate.of(2026, 9, 23)));
+        stubLatest(BRL, USD, null);
+
+        ExchangeRateView view = service.latest(USD, BRL);
+
+        assertThat(view.source()).isEqualTo(ExchangeRateSource.FRANKFURTER);
+        assertThat(view.rate()).isEqualByComparingTo("5.1322");
+    }
+
+    @Test
+    void theSeedRateIsUsedOnlyWhileNoRateWasObserved() {
+        stubLatestObserved(USD, BRL, null);
+        stubLatestObserved(BRL, USD, null);
+        stubLatest(USD, BRL, seed(USD, BRL, "5.0000", LocalDate.of(2026, 9, 23)));
+        stubLatest(BRL, USD, null);
+
+        assertThat(service.latest(USD, BRL).source()).isEqualTo(ExchangeRateSource.SEED);
+    }
+
     @Test
     void latestReturnsThePublishedPair() {
         stubLatest(USD, BRL, rate(USD, BRL, "5.1322", LocalDate.of(2026, 9, 23)));

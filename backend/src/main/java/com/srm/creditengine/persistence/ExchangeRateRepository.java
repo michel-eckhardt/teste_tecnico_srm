@@ -17,6 +17,10 @@ public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, UUID
     Optional<ExchangeRate> findFirstByBaseCurrencyAndQuoteCurrencyOrderByReferenceDateDescCreatedAtDesc(
             CurrencyCode base, CurrencyCode quote);
 
+    /** Most recent observation of a pair ignoring one source (e.g. the bootstrap {@code SEED} rate). */
+    Optional<ExchangeRate> findFirstByBaseCurrencyAndQuoteCurrencyAndSourceNotOrderByReferenceDateDescCreatedAtDesc(
+            CurrencyCode base, CurrencyCode quote, ExchangeRateSource excluded);
+
     /** Identical observation already stored (used to keep provider synchronization idempotent). */
     Optional<ExchangeRate> findFirstByBaseCurrencyAndQuoteCurrencyAndReferenceDateAndSourceAndRate(
             CurrencyCode base, CurrencyCode quote, LocalDate referenceDate, ExchangeRateSource source, BigDecimal rate);

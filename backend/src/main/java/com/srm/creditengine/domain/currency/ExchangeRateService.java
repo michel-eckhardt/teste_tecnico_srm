@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -110,15 +111,33 @@ public class ExchangeRateService {
                 .isBefore(clock.now());
     }
 
+    /**
+     * Latest rate between two currencies (direct or inverse pair). Observed rates (provider or
+     * manual) always prevail over the bootstrap {@code SEED} rate, whatever their reference dates:
+     * the seed is dated on the deploy day while the ECB publishes the previous business day until
+     * the afternoon, so ranking by date alone would let the placeholder shadow the real quote.
+     */
     private Optional<CurrencyConversion> latestConversion(CurrencyCode from, CurrencyCode to) {
         if (from == to) {
             throw new IllegalArgumentException("conversion requires two distinct currencies");
         }
-        Optional<ExchangeRate> direct =
-                rates.findFirstByBaseCurrencyAndQuoteCurrencyOrderByReferenceDateDescCreatedAtDesc(from, to);
-        Optional<ExchangeRate> inverse =
-                rates.findFirstByBaseCurrencyAndQuoteCurrencyOrderByReferenceDateDescCreatedAtDesc(to, from);
-        return Stream.concat(direct.stream(), inverse.stream())
+        return mostRecent(from, to, this::latestObserved).or(() -> mostRecent(from, to, this::latestOfAnySource));
+    }
+
+    private Optional<ExchangeRate> latestObserved(CurrencyCode base, CurrencyCode quote) {
+        return rates.findFirstByBaseCurrencyAndQuoteCurrencyAndSourceNotOrderByReferenceDateDescCreatedAtDesc(
+                base, quote, ExchangeRateSource.SEED);
+    }
+
+    private Optional<ExchangeRate> latestOfAnySource(CurrencyCode base, CurrencyCode quote) {
+        return rates.findFirstByBaseCurrencyAndQuoteCurrencyOrderByReferenceDateDescCreatedAtDesc(base, quote);
+    }
+
+    private static Optional<CurrencyConversion> mostRecent(
+            CurrencyCode from,
+            CurrencyCode to,
+            BiFunction<CurrencyCode, CurrencyCode, Optional<ExchangeRate>> latestOfPair) {
+        return Stream.concat(latestOfPair.apply(from, to).stream(), latestOfPair.apply(to, from).stream())
                 .max(RECENCY)
                 .map(rate -> new CurrencyConversion(rate, from, to));
     }
