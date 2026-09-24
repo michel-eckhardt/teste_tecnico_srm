@@ -5,7 +5,10 @@ import com.srm.creditengine.domain.currency.ExchangeRateSyncService;
 import com.srm.creditengine.domain.currency.ExchangeRateView;
 import com.srm.creditengine.web.support.ApiPaths;
 import com.srm.creditengine.web.support.PageResponse;
+import com.srm.creditengine.web.support.ProblemResponses;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -14,6 +17,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +46,7 @@ public class ExchangeRateController {
     @Operation(
             summary = "Taxa vigente de um par",
             description = "Usa o par publicado ou o inverso derivado, o que for mais recente. 404 se não houver taxa.")
+    @ProblemResponses({404})
     public ExchangeRateResponse latest(@Valid @ParameterObject CurrencyPairQuery pair) {
         return ExchangeRateResponse.from(exchangeRateService.latest(pair.base(), pair.quote()));
     }
@@ -64,6 +69,10 @@ public class ExchangeRateController {
 
     @PostMapping
     @Operation(summary = "Cadastra uma taxa manualmente")
+    @ApiResponse(
+            responseCode = "201",
+            description = "Taxa registrada",
+            headers = @Header(name = HttpHeaders.LOCATION, description = "URL da taxa criada"))
     public ResponseEntity<ExchangeRateResponse> register(@Valid @RequestBody ManualExchangeRateRequest request) {
         ExchangeRateView created = exchangeRateService.registerManual(
                 request.base(), request.quote(), request.rate(), request.referenceDate());
@@ -79,6 +88,7 @@ public class ExchangeRateController {
             summary = "Sincroniza as taxas com a API Frankfurter",
             description = "Chamada protegida por retry e circuit breaker. Idempotente: taxas idênticas não são "
                     + "duplicadas. 503 FX_PROVIDER_UNAVAILABLE se o provedor estiver indisponível.")
+    @ProblemResponses({503})
     public List<ExchangeRateResponse> synchronize() {
         return exchangeRateSyncService.synchronize().stream()
                 .map(ExchangeRateResponse::from)

@@ -31,6 +31,11 @@ server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
 
+springdoc:
+  # Every endpoint consumes/produces JSON (errors are application/problem+json, documented per operation).
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
 management:
   endpoints:
     web:

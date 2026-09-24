@@ -3,6 +3,7 @@ package com.srm.creditengine.web.pricing;
 import com.srm.creditengine.domain.pricing.PricingService;
 import com.srm.creditengine.domain.pricing.ReceivableTypeCatalog;
 import com.srm.creditengine.web.support.ApiPaths;
+import com.srm.creditengine.web.support.ProblemResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -39,6 +40,7 @@ public class PricingController {
             summary = "Simula a precificação de um recebível (não persiste nada)",
             description = "valorPresente = valorFace / (1 + taxaBase + spread) ^ (prazoDias / 30); conversão cambial "
                     + "aplicada no final sobre o valor não arredondado; arredondamento HALF_EVEN único.")
+    @ProblemResponses({422})
     public SimulationResponse simulate(@Valid @RequestBody SimulationRequest request) {
         return SimulationResponse.from(pricingService.simulate(
                 request.receivableType(),

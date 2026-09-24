@@ -6,8 +6,11 @@ import com.srm.creditengine.domain.assignment.CreditAssignmentService;
 import com.srm.creditengine.domain.assignment.SettlementService;
 import com.srm.creditengine.web.support.ApiPaths;
 import com.srm.creditengine.web.support.EntityTags;
+import com.srm.creditengine.web.support.ProblemResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
@@ -45,6 +48,22 @@ public class CreditAssignmentController {
             summary = "Cria uma operação de cessão (precifica e persiste o lote atomicamente)",
             description = "201 para uma nova operação. Com Idempotency-Key: a mesma chave com o mesmo conteúdo "
                     + "devolve a operação existente (200); com outro conteúdo, 409 IDEMPOTENCY_KEY_REUSED.")
+    @ApiResponse(
+            responseCode = "201",
+            description = "Operação criada (PENDING)",
+            headers = {
+                @Header(name = HttpHeaders.LOCATION, description = "URL da operação criada"),
+                @Header(name = HttpHeaders.ETAG, description = "Versão da operação, ex.: \"0\"")
+            })
+    @ApiResponse(
+            responseCode = "200",
+            description =
+                    "Reenvio idempotente: a mesma Idempotency-Key e o mesmo conteúdo devolvem a operação já criada",
+            headers = {
+                @Header(name = HttpHeaders.CONTENT_LOCATION, description = "URL da operação existente"),
+                @Header(name = HttpHeaders.ETAG, description = "Versão atual da operação")
+            })
+    @ProblemResponses({404, 409, 422})
     public ResponseEntity<CreditAssignmentResponse> create(
             @Parameter(description = "Chave de idempotência (UUID recomendado)")
                     @RequestHeader(name = IDEMPOTENCY_KEY, required = false)
@@ -65,6 +84,10 @@ public class CreditAssignmentController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Consulta uma operação (ETag = versão atual)")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Operação",
+            headers = @Header(name = HttpHeaders.ETAG, description = "Versão atual, usada no If-Match"))
     public ResponseEntity<CreditAssignmentResponse> get(@PathVariable UUID id) {
         return withEtag(creditAssignments.get(id));
     }
@@ -75,6 +98,11 @@ public class CreditAssignmentController {
             description = "Na mesma transação: PENDING -> SETTLED, débito da conta-caixa do fundo na moeda de "
                     + "pagamento e registro do movimento. 409 se já liquidada/cancelada ou em conflito concorrente, "
                     + "412 se o If-Match não for a versão atual, 422 INSUFFICIENT_FUNDS, 428 sem If-Match.")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Operação liquidada (SETTLED)",
+            headers = @Header(name = HttpHeaders.ETAG, description = "Nova versão da operação"))
+    @ProblemResponses({409, 412, 422, 428})
     public ResponseEntity<CreditAssignmentResponse> settle(
             @PathVariable UUID id,
             @Parameter(description = "ETag atual da operação, ex.: \"0\"") @RequestHeader(HttpHeaders.IF_MATCH)
@@ -84,6 +112,11 @@ public class CreditAssignmentController {
 
     @PostMapping("/{id}/cancellation")
     @Operation(summary = "Cancela uma operação pendente (If-Match obrigatório)")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Operação cancelada (CANCELLED)",
+            headers = @Header(name = HttpHeaders.ETAG, description = "Nova versão da operação"))
+    @ProblemResponses({409, 412, 428})
     public ResponseEntity<CreditAssignmentResponse> cancel(
             @PathVariable UUID id,
             @Parameter(description = "ETag atual da operação, ex.: \"0\"") @RequestHeader(HttpHeaders.IF_MATCH)
