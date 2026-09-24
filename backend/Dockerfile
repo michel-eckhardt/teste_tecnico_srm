@@ -3,7 +3,7 @@
 #   docker build -t srm-credit-engine-backend .
 
 # ---- Build stage: Maven wrapper, dependency layer cached apart from the sources ----------------
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:25-jdk-alpine AS build
 WORKDIR /workspace
 
 # Wrapper and POM first: this layer (and the downloaded dependencies) is reused until pom.xml changes.
@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     && java -Djarmode=tools -jar target/credit-engine-*.jar extract --layers --launcher --destination target/extracted
 
 # ---- Runtime stage: JRE only, non-root, layered application --------------------------------------
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 RUN addgroup -S srm && adduser -S -D -H -u 10001 -G srm srm
 WORKDIR /app
