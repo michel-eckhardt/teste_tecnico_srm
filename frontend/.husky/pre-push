@@ -1,0 +1,7 @@
+# Unit tests of both sides before anything leaves the machine. Integration tests (Testcontainers)
+# stay in CI, where Docker is guaranteed.
+echo "husky > backend: unit tests"
+(cd backend && ./mvnw -q -B test)
+
+echo "husky > frontend: typecheck + unit tests"
+(cd frontend && npm run -s typecheck && npm test --silent)

@@ -1,0 +1,13 @@
+# Git hooks live in frontend/.husky (Husky needs Node, which only the frontend has) but guard the
+# whole repository. Hooks run from the repository root; each side runs only when it has staged files.
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if echo "$staged" | grep -q '^frontend/'; then
+  echo "husky > frontend: eslint + prettier on staged files (lint-staged)"
+  (cd frontend && node_modules/.bin/lint-staged)
+fi
+
+if echo "$staged" | grep -q '^backend/.*\.java$'; then
+  echo "husky > backend: formatting check (spotless)"
+  (cd backend && ./mvnw -q -B spotless:check)
+fi
