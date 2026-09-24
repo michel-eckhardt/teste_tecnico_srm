@@ -283,6 +283,37 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        FieldViolation: {
+            /** @description Campo inválido (ex.: receivables[0].faceValue) */
+            field: string;
+            /** @description Mensagem de validação, em português */
+            message: string;
+        };
+        /** @description Problem Details (RFC 9457) com as extensões code, correlationId e errors */
+        Problem: {
+            /**
+             * Format: uri
+             * @description URI que identifica o tipo do problema
+             */
+            type: string;
+            /** @description Resumo do problema, em português */
+            title: string;
+            /** @description Status HTTP */
+            status: number;
+            /** @description Explicação desta ocorrência, em português */
+            detail?: string;
+            /**
+             * Format: uri-reference
+             * @description Caminho da requisição
+             */
+            instance?: string;
+            /** @description Código estável do erro para tratamento no cliente (ex.: INSUFFICIENT_FUNDS) */
+            code: string;
+            /** @description Mesmo valor do header X-Correlation-Id e dos logs */
+            correlationId: string;
+            /** @description Violações por campo (somente em erros de validação) */
+            errors?: components["schemas"]["FieldViolation"][];
+        };
         SimulationRequest: {
             /** @example DUPLICATA_MERCANTIL */
             receivableType: string;
@@ -309,79 +340,79 @@ export interface components {
         };
         ExchangeRateSnapshot: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @enum {string} */
-            base?: "BRL" | "USD";
+            base: "BRL" | "USD";
             /** @enum {string} */
-            quote?: "BRL" | "USD";
+            quote: "BRL" | "USD";
             /**
              * Format: decimal
              * @example 10000.00
              */
-            rate?: string;
+            rate: string;
             /** Format: date */
-            referenceDate?: string;
+            referenceDate: string;
         };
         SimulationResponse: {
             /** @enum {string} */
-            receivableType?: "DUPLICATA_MERCANTIL" | "CHEQUE_PRE_DATADO";
+            receivableType: "DUPLICATA_MERCANTIL" | "CHEQUE_PRE_DATADO";
             /**
              * Format: decimal
              * @example 10000.00
              */
-            faceValue?: string;
+            faceValue: string;
             /** @enum {string} */
-            faceCurrency?: "BRL" | "USD";
+            faceCurrency: "BRL" | "USD";
             /** @enum {string} */
-            paymentCurrency?: "BRL" | "USD";
+            paymentCurrency: "BRL" | "USD";
             /** Format: date */
-            operationDate?: string;
+            operationDate: string;
             /** Format: date */
-            dueDate?: string;
+            dueDate: string;
             /** Format: int32 */
-            termDays?: number;
+            termDays: number;
             /**
              * Format: decimal
              * @description termDays / 30
              * @example 10000.00
              */
-            termMonths?: string;
+            termMonths: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            baseRate?: string;
+            baseRate: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            spread?: string;
+            spread: string;
             /**
              * Format: decimal
              * @description baseRate + spread (mensal)
              * @example 10000.00
              */
-            discountRate?: string;
+            discountRate: string;
             /**
              * Format: decimal
              * @description Na moeda de face
              * @example 10000.00
              */
-            presentValue?: string;
+            presentValue: string;
             /**
              * Format: decimal
              * @description Na moeda de face
              * @example 10000.00
              */
-            discount?: string;
+            discount: string;
             /** @description null quando faceCurrency == paymentCurrency */
-            exchangeRate?: components["schemas"]["ExchangeRateSnapshot"];
+            exchangeRate: components["schemas"]["ExchangeRateSnapshot"] | null;
             /**
              * Format: decimal
              * @description Valor presente na moeda de pagamento
              * @example 10000.00
              */
-            netAmount?: string;
+            netAmount: string;
         };
         ManualExchangeRateRequest: {
             /**
@@ -407,27 +438,27 @@ export interface components {
         };
         ExchangeRateResponse: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @enum {string} */
-            base?: "BRL" | "USD";
+            base: "BRL" | "USD";
             /** @enum {string} */
-            quote?: "BRL" | "USD";
+            quote: "BRL" | "USD";
             /**
              * Format: decimal
              * @description Unidades de quote por 1 unidade de base
              * @example 5.13220000
              */
-            rate?: string;
+            rate: string;
             /** @enum {string} */
-            source?: "MANUAL" | "FRANKFURTER" | "SEED";
+            source: "MANUAL" | "FRANKFURTER" | "SEED";
             /** Format: date */
-            referenceDate?: string;
+            referenceDate: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** @description Taxa mais antiga que srm.fx.max-rate-age; não pode precificar operações */
-            stale?: boolean;
+            stale: boolean;
             /** @description Taxa derivada do par inverso (ex.: BRL/USD calculada a partir de USD/BRL) */
-            derived?: boolean;
+            derived: boolean;
         };
         CreateCreditAssignmentRequest: {
             /** Format: uuid */
@@ -460,94 +491,92 @@ export interface components {
         };
         AssignorSummary: {
             /** Format: uuid */
-            id?: string;
-            name?: string;
-            document?: string;
+            id: string;
+            name: string;
+            document: string;
         };
         CreditAssignmentResponse: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @enum {string} */
-            status?: "PENDING" | "SETTLED" | "CANCELLED";
+            status: "PENDING" | "SETTLED" | "CANCELLED";
             /**
              * Format: int64
              * @description Versão para controle otimista (também devolvida no ETag)
              */
-            version?: number;
-            assignor?: components["schemas"]["AssignorSummary"];
+            version: number;
+            assignor: components["schemas"]["AssignorSummary"];
             /** @enum {string} */
-            paymentCurrency?: "BRL" | "USD";
+            paymentCurrency: "BRL" | "USD";
             /**
              * Format: decimal
              * @example 10000.00
              */
-            totalFaceValue?: string;
+            totalFaceValue: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            totalDiscount?: string;
+            totalDiscount: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            totalNetAmount?: string;
+            totalNetAmount: string;
             /** Format: int32 */
-            receivablesCount?: number;
-            receivables?: components["schemas"]["ReceivableResponse"][];
+            receivablesCount: number;
+            receivables: components["schemas"]["ReceivableResponse"][];
             /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            settledAt?: string;
-            /** Format: date-time */
-            cancelledAt?: string;
+            createdAt: string;
+            settledAt: string | null;
+            cancelledAt: string | null;
         };
         ReceivableResponse: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @enum {string} */
-            receivableType?: "DUPLICATA_MERCANTIL" | "CHEQUE_PRE_DATADO";
+            receivableType: "DUPLICATA_MERCANTIL" | "CHEQUE_PRE_DATADO";
             /**
              * Format: decimal
              * @example 10000.00
              */
-            faceValue?: string;
+            faceValue: string;
             /** @enum {string} */
-            faceCurrency?: "BRL" | "USD";
+            faceCurrency: "BRL" | "USD";
             /** Format: date */
-            dueDate?: string;
+            dueDate: string;
             /** Format: int32 */
-            termDays?: number;
+            termDays: number;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            baseRate?: string;
+            baseRate: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            spread?: string;
-            /**
-             * Format: decimal
-             * @description Na moeda de face
-             * @example 10000.00
-             */
-            presentValue?: string;
+            spread: string;
             /**
              * Format: decimal
              * @description Na moeda de face
              * @example 10000.00
              */
-            discount?: string;
+            presentValue: string;
+            /**
+             * Format: decimal
+             * @description Na moeda de face
+             * @example 10000.00
+             */
+            discount: string;
             /** @description null quando a moeda de face é a de pagamento */
-            exchangeRate?: components["schemas"]["ExchangeRateSnapshot"];
+            exchangeRate: components["schemas"]["ExchangeRateSnapshot"] | null;
             /**
              * Format: decimal
              * @description Na moeda de pagamento
              * @example 10000.00
              */
-            netAmount?: string;
+            netAmount: string;
         };
         AssignorRequest: {
             /** @example ACME Indústria Ltda */
@@ -557,94 +586,93 @@ export interface components {
         };
         AssignorResponse: {
             /** Format: uuid */
-            id?: string;
-            name?: string;
-            document?: string;
+            id: string;
+            name: string;
+            document: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
         };
         PageMetadata: {
             /** Format: int32 */
-            number?: number;
+            number: number;
             /** Format: int32 */
-            size?: number;
+            size: number;
             /** Format: int64 */
-            totalElements?: number;
+            totalElements: number;
             /** Format: int32 */
-            totalPages?: number;
+            totalPages: number;
         };
         PageResponseSettlementStatementItem: {
-            content?: components["schemas"]["SettlementStatementItem"][];
-            page?: components["schemas"]["PageMetadata"];
+            content: components["schemas"]["SettlementStatementItem"][];
+            page: components["schemas"]["PageMetadata"];
         };
         SettlementStatementItem: {
             /** Format: uuid */
-            operationId?: string;
+            operationId: string;
             /** Format: uuid */
-            assignorId?: string;
-            assignorName?: string;
-            assignorDocument?: string;
+            assignorId: string;
+            assignorName: string;
+            assignorDocument: string;
             /** @enum {string} */
-            status?: "PENDING" | "SETTLED" | "CANCELLED";
+            status: "PENDING" | "SETTLED" | "CANCELLED";
             /** @enum {string} */
-            paymentCurrency?: "BRL" | "USD";
+            paymentCurrency: "BRL" | "USD";
             /** Format: int32 */
-            receivablesCount?: number;
+            receivablesCount: number;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            totalFaceValue?: string;
+            totalFaceValue: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            totalDiscount?: string;
+            totalDiscount: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            totalNetAmount?: string;
+            totalNetAmount: string;
             /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            settledAt?: string;
+            createdAt: string;
+            settledAt: string | null;
         };
         ReceivableTypeResponse: {
             /** @enum {string} */
-            code?: "DUPLICATA_MERCANTIL" | "CHEQUE_PRE_DATADO";
-            description?: string;
+            code: "DUPLICATA_MERCANTIL" | "CHEQUE_PRE_DATADO";
+            description: string;
             /**
              * Format: decimal
              * @example 10000.00
              */
-            monthlySpread?: string;
+            monthlySpread: string;
         };
         PageResponseExchangeRateResponse: {
-            content?: components["schemas"]["ExchangeRateResponse"][];
-            page?: components["schemas"]["PageMetadata"];
+            content: components["schemas"]["ExchangeRateResponse"][];
+            page: components["schemas"]["PageMetadata"];
         };
         CurrencyResponse: {
             /** @enum {string} */
-            code?: "BRL" | "USD";
-            name?: string;
+            code: "BRL" | "USD";
+            name: string;
             /** Format: int32 */
-            decimals?: number;
+            decimals: number;
         };
         CashAccountResponse: {
             /** @enum {string} */
-            currency?: "BRL" | "USD";
+            currency: "BRL" | "USD";
             /**
              * Format: decimal
              * @example 10000.00
              */
-            balance?: string;
+            balance: string;
             /** Format: date-time */
-            updatedAt?: string;
+            updatedAt: string;
         };
         PageResponseAssignorResponse: {
-            content?: components["schemas"]["AssignorResponse"][];
-            page?: components["schemas"]["PageMetadata"];
+            content: components["schemas"]["AssignorResponse"][];
+            page: components["schemas"]["PageMetadata"];
         };
     };
     responses: never;
@@ -674,7 +702,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["SimulationResponse"];
+                    "application/json": components["schemas"]["SimulationResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Regra de negócio violada */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -701,7 +756,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageResponseExchangeRateResponse"];
+                    "application/json": components["schemas"]["PageResponseExchangeRateResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -719,13 +792,33 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Taxa registrada */
+            201: {
+                headers: {
+                    /** @description URL da taxa criada */
+                    Location?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeRateResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ExchangeRateResponse"];
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -745,7 +838,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ExchangeRateResponse"][];
+                    "application/json": components["schemas"]["ExchangeRateResponse"][];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Provedor de câmbio indisponível (circuit breaker aberto ou falha após retries) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -766,13 +877,75 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Reenvio idempotente: a mesma Idempotency-Key e o mesmo conteúdo devolvem a operação já criada */
             200: {
+                headers: {
+                    /** @description Versão atual da operação */
+                    ETag?: unknown;
+                    /** @description URL da operação existente */
+                    "Content-Location"?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditAssignmentResponse"];
+                };
+            };
+            /** @description Operação criada (PENDING) */
+            201: {
+                headers: {
+                    /** @description Versão da operação, ex.: "0" */
+                    ETag?: unknown;
+                    /** @description URL da operação criada */
+                    Location?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditAssignmentResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CreditAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Recurso não encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflito de estado (operação já liquidada/cancelada, concorrência, duplicidade) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Regra de negócio violada */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -791,13 +964,78 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Operação liquidada (SETTLED) */
             200: {
+                headers: {
+                    /** @description Nova versão da operação */
+                    ETag?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditAssignmentResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CreditAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Recurso não encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflito de estado (operação já liquidada/cancelada, concorrência, duplicidade) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description If-Match não corresponde à versão atual do recurso */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Regra de negócio violada */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description If-Match ausente */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -816,13 +1054,69 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Operação cancelada (CANCELLED) */
             200: {
+                headers: {
+                    /** @description Nova versão da operação */
+                    ETag?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditAssignmentResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CreditAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Recurso não encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflito de estado (operação já liquidada/cancelada, concorrência, duplicidade) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description If-Match não corresponde à versão atual do recurso */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description If-Match ausente */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -846,7 +1140,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageResponseAssignorResponse"];
+                    "application/json": components["schemas"]["PageResponseAssignorResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -864,13 +1176,42 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Cedente cadastrado */
+            201: {
+                headers: {
+                    /** @description URL do cedente criado */
+                    Location?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignorResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AssignorResponse"];
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflito de estado (operação já liquidada/cancelada, concorrência, duplicidade) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -902,7 +1243,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageResponseSettlementStatementItem"];
+                    "application/json": components["schemas"]["PageResponseSettlementStatementItem"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -922,7 +1281,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ReceivableTypeResponse"][];
+                    "application/json": components["schemas"]["ReceivableTypeResponse"][];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -944,7 +1312,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ExchangeRateResponse"];
+                    "application/json": components["schemas"]["ExchangeRateResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Recurso não encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -969,7 +1364,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ExchangeRateResponse"];
+                    "application/json": components["schemas"]["ExchangeRateResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Recurso não encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -989,7 +1411,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CurrencyResponse"][];
+                    "application/json": components["schemas"]["CurrencyResponse"][];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -1005,13 +1436,42 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Operação */
             200: {
+                headers: {
+                    /** @description Versão atual, usada no If-Match */
+                    ETag?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditAssignmentResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CreditAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Recurso não encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -1031,7 +1491,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CashAccountResponse"][];
+                    "application/json": components["schemas"]["CashAccountResponse"][];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -1053,7 +1522,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AssignorResponse"];
+                    "application/json": components["schemas"]["AssignorResponse"];
+                };
+            };
+            /** @description Requisição inválida (validação, formato ou parâmetro) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Recurso não encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Erro inesperado (sem detalhes internos) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };
