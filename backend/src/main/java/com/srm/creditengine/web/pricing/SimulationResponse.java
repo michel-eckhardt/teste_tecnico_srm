@@ -6,6 +6,7 @@ import com.srm.creditengine.domain.pricing.ReceivableType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import org.jspecify.annotations.Nullable;
 
 public record SimulationResponse(
         ReceivableType receivableType,
@@ -22,7 +23,7 @@ public record SimulationResponse(
         @Schema(description = "Na moeda de face") BigDecimal presentValue,
         @Schema(description = "Na moeda de face") BigDecimal discount,
 
-        @Schema(description = "null quando faceCurrency == paymentCurrency")
+        @Schema(description = "null quando faceCurrency == paymentCurrency") @Nullable
         ExchangeRateSnapshot exchangeRate,
 
         @Schema(description = "Valor presente na moeda de pagamento")

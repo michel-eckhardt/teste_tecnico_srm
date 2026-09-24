@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** Credit assignment operation; totals are expressed in the payment currency. */
 public record CreditAssignmentResponse(
@@ -31,8 +32,8 @@ public record CreditAssignmentResponse(
         int receivablesCount,
         List<ReceivableResponse> receivables,
         Instant createdAt,
-        Instant settledAt,
-        Instant cancelledAt) {
+        @Nullable Instant settledAt,
+        @Nullable Instant cancelledAt) {
 
     public record AssignorSummary(UUID id, String name, String document) {}
 
@@ -48,7 +49,7 @@ public record CreditAssignmentResponse(
             @Schema(description = "Na moeda de face") BigDecimal presentValue,
             @Schema(description = "Na moeda de face") BigDecimal discount,
 
-            @Schema(description = "null quando a moeda de face é a de pagamento")
+            @Schema(description = "null quando a moeda de face é a de pagamento") @Nullable
             ExchangeRateSnapshot exchangeRate,
 
             @Schema(description = "Na moeda de pagamento") BigDecimal netAmount) {

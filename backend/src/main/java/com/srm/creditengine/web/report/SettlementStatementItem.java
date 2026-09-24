@@ -6,6 +6,7 @@ import com.srm.creditengine.persistence.report.SettlementStatementRow;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /** One line of the settlement statement; totals are in the payment currency. */
 public record SettlementStatementItem(
@@ -20,7 +21,7 @@ public record SettlementStatementItem(
         BigDecimal totalDiscount,
         BigDecimal totalNetAmount,
         Instant createdAt,
-        Instant settledAt) {
+        @Nullable Instant settledAt) {
 
     static SettlementStatementItem from(SettlementStatementRow row) {
         return new SettlementStatementItem(
