@@ -11,8 +11,24 @@
 -- Amounts follow the pricing formula PV = face / (1 + baseRate + spread) ^ (days / 30) and
 -- totals are consistent (face = discount + net). SQL round() is half away from zero, while
 -- the application rounds HALF_EVEN; cents may differ on exact ties, irrelevant for demo data.
--- Demo documents start with 7700 and are not real CNPJs (check digits are not computed).
+-- Demo documents start with 7700 and carry valid check digits, so they pass the same CNPJ
+-- validation as the API and the UI (they are not registered companies).
 -- =====================================================================================
+
+-- CNPJ check digits: modulo 11 with weights 5,4,3,2,9..2 (1st digit) and 6,5,4,3,2,9..2 (2nd digit).
+-- Session-scoped (pg_temp): the helper does not outlive the migration.
+CREATE FUNCTION pg_temp.cnpj_with_check_digits(base12 text) RETURNS text
+    LANGUAGE sql
+    IMMUTABLE AS
+$$
+WITH first_digit AS (SELECT base12 || (CASE WHEN s % 11 < 2 THEN 0 ELSE 11 - s % 11 END) AS base13
+                     FROM (SELECT sum(substr(base12, i, 1)::int * (ARRAY [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2])[i]) AS s
+                           FROM generate_series(1, 12) AS i) AS weighted)
+SELECT base13 || (CASE WHEN s % 11 < 2 THEN 0 ELSE 11 - s % 11 END)
+FROM first_digit,
+     LATERAL (SELECT sum(substr(base13, i, 1)::int * (ARRAY [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2])[i]) AS s
+              FROM generate_series(1, 13) AS i) AS weighted
+$$;
 
 INSERT INTO assignor (id, name, document, created_at)
 SELECT gen_random_uuid(),
@@ -22,7 +38,7 @@ SELECT gen_random_uuid(),
                       'Metalúrgica'])[1 + (g / 10) % 8],
               lpad(g::text, 3, '0'),
               (ARRAY ['Ltda', 'S.A.', 'Eireli', 'ME'])[1 + g % 4]),
-       lpad((77000000 + g)::text, 8, '0') || '0001' || lpad((g * 37 % 100)::text, 2, '0'),
+       pg_temp.cnpj_with_check_digits(lpad((77000000 + g)::text, 8, '0') || '0001'),
        now() - interval '400 days' + g * interval '1 hour'
 FROM generate_series(1, 200) AS g;
 
