@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Git hooks are for developer machines; `npm ci` must not touch the runner's git config.
+  HUSKY: "0"
+
+jobs:
+  commitlint:
+    name: Conventional Commits
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Lint every commit of the pull request
+        run: >
+          npx commitlint --config commitlint.config.js --verbose
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+
+  backend:
+    name: Backend (format, unit, integration, architecture, coverage)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      # spotless:check, unit tests, ArchUnit, Testcontainers ITs (PostgreSQL + WireMock) and the
+      # JaCoCo coverage gate of the domain packages
+      - run: ./mvnw -B -ntp verify
+      - name: Upload test and coverage reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-reports
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+            backend/target/site/jacoco/
+          retention-days: 14
+
+  frontend:
+    name: Frontend (lint, types, format, tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm run coverage
+      - run: npm run build
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+          retention-days: 14
+
+  images:
+    name: Container images
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build ${{ matrix.component }} image
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.component }}
+          push: false
+          tags: srm-credit-engine-${{ matrix.component }}:ci
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+      - name: Validate docker compose file
+        if: matrix.component == 'backend'
+        working-directory: .
+        run: docker compose config --quiet
