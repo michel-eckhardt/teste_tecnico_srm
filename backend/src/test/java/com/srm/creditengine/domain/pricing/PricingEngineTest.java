@@ -71,7 +71,7 @@ class PricingEngineTest {
                 exchangeRates,
                 currencies,
                 clock,
-                new BusinessMetrics(new SimpleMeterRegistry()),
+                new BusinessMetrics(new SimpleMeterRegistry(), List.of("BRL", "USD")),
                 new PricingProperties(1825, baseRates));
     }
 

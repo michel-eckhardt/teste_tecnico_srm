@@ -1,6 +1,7 @@
 package com.srm.creditengine.domain.assignment;
 
 import com.srm.creditengine.domain.common.BusinessMetrics;
+import com.srm.creditengine.domain.common.BusinessMetrics.ConflictReason;
 import com.srm.creditengine.domain.common.StaleVersionException;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -68,16 +69,16 @@ public class SettlementService {
         try {
             return command.get();
         } catch (StaleVersionException conflict) {
-            metrics.settlementConflict("stale_version");
+            metrics.settlementConflict(ConflictReason.STALE_VERSION);
             throw conflict;
         } catch (OperationAlreadySettledException conflict) {
-            metrics.settlementConflict("already_settled");
+            metrics.settlementConflict(ConflictReason.ALREADY_SETTLED);
             throw conflict;
         } catch (InvalidStateTransitionException conflict) {
-            metrics.settlementConflict("invalid_state");
+            metrics.settlementConflict(ConflictReason.INVALID_STATE);
             throw conflict;
         } catch (OptimisticLockingFailureException conflict) {
-            metrics.settlementConflict("optimistic_lock");
+            metrics.settlementConflict(ConflictReason.OPTIMISTIC_LOCK);
             throw conflict;
         }
     }

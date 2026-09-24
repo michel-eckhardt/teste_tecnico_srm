@@ -36,7 +36,7 @@ class CreditAssignmentServiceTest {
     private final CreditAssignmentTransactions transactions = mock(CreditAssignmentTransactions.class);
     private final SimpleMeterRegistry meters = new SimpleMeterRegistry();
     private final CreditAssignmentService service =
-            new CreditAssignmentService(transactions, new BusinessMetrics(meters));
+            new CreditAssignmentService(transactions, new BusinessMetrics(meters, List.of("BRL", "USD")));
 
     private static CreditAssignment storedWith(String requestHash) {
         return CreditAssignment.open(
@@ -82,7 +82,8 @@ class CreditAssignmentServiceTest {
         assertThat(result.created()).isFalse();
         assertThat(result.assignment()).isSameAs(original);
         verify(transactions, never()).open(any(), any());
-        assertThat(meters.find(BusinessMetrics.ASSIGNMENTS_CREATED).counter()).isNull();
+        assertThat(meters.find(BusinessMetrics.ASSIGNMENTS_CREATED).counters())
+                .allSatisfy(counter -> assertThat(counter.count()).isZero());
     }
 
     @Test
