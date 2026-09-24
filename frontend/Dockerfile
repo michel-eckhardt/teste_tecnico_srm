@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- build: type-check and bundle the SPA -------------------------------------------------------
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 
 # Dependencies first (cached layer while package*.json do not change); exact versions from the lock.
