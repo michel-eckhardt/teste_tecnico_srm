@@ -124,10 +124,10 @@ containers.
 - **Dinheiro nunca vira `number`.** Valores e taxas trafegam como string (contrato); a formatação usa
   `Intl.NumberFormat` com strings numéricas (exata, ES2023), somas/comparações usam centavos em
   `BigInt`, e o campo de valor usa máscara "de banco" (dígitos preenchem a partir dos centavos).
-- **Tipos gerados do OpenAPI + refinamento.** O springdoc documenta toda propriedade de resposta
-  como opcional e nunca como `nullable`; `shared/api/contract.ts` restaura o contrato real e prova em
-  tempo de compilação (`Narrows`) que o tipo refinado só estreita o gerado — regenerar o schema após
-  uma mudança no backend quebra o build em vez de quebrar em runtime.
+- **Tipos gerados do OpenAPI.** O documento do backend declara o contrato real (campos de resposta
+  sempre presentes, só os anuláveis aceitam `null`, erros como `Problem`); `shared/api/contract.ts`
+  apenas dá nomes de domínio aos tipos gerados. Regenerar o schema após uma mudança no backend quebra
+  o build em um único lugar em vez de quebrar em runtime.
 - **Erros RFC 9457.** Toda falha vira `ApiError` (status, `code`, título/detalhe em português,
   violações por campo, `correlationId`). A UI decide pelo `code`, nunca pela mensagem. Cada requisição
   envia seu próprio `X-Correlation-Id` (reutilizado pelo backend), exibido com botão de cópia.
