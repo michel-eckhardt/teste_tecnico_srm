@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # ---- runtime: static files + reverse proxy, as a non-root user ----------------------------------
-FROM nginxinc/nginx-unprivileged:1.30-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 
 # Backend reached through the same origin (/api -> API_UPSTREAM). NGINX_RESOLVER is Docker's
 # embedded DNS, used to resolve the upstream at request time.
